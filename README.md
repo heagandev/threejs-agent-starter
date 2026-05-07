@@ -1,4 +1,4 @@
-# AI Game Dev Starter Pack
+# AI Game Dev Quickstart Guide
 
 **A working Three.js browser game — ready to extend with any AI agent.**
 
@@ -53,7 +53,7 @@ Paste any prompt file into your agent to add a feature:
 | `/power-ups` | Speed boost, shield, and slow-mo power-up system |
 | `/game-juice` | Screen shake, squash/stretch, score milestones |
 | `/level-two` | A second level with transitions |
-| `/plan` | Plan an entirely new game from scratch |
+| `/plan` | Plan an entirely new game from scratch (`git checkout new-game` first) |
 
 **Recommended workflow:**
 
@@ -94,7 +94,7 @@ The `skills/` folder contains Three.js reference sheets. Your agent loads them v
 
 Once you've run through the included prompts, here are directions worth exploring:
 
-- **New game type** — use `/plan` to design something original with your agent
+- **Make other games** — checkout `new-game` branch and use `/plan` to design something original with your agent
 - **Mobile controls** — add touch/swipe input for mobile players
 - **Leaderboard** — score submission with a simple backend
 - **Custom shaders** — visual effects via `skills/threejs-shaders.md`
