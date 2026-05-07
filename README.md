@@ -25,7 +25,7 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 | 🧠 | **10 Three.js skill files** your agent loads automatically |
 | 📋 | **4 prompt files** to extend the game feature by feature |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
-| 🌿 | **`tutorial/cube-runner-from-scratch` branch** — follow along building it from zero (YouTube) |
+| 🌿 | **`new-game` branch** — blank canvas + `/plan` prompt to design your own game from scratch |
 
 ---
 
@@ -103,16 +103,6 @@ Once you've run through the included prompts, here are directions worth explorin
 - **Procedural generation** — infinite levels from a seed
 
 Each one makes a great agent session. Open a branch, paste a prompt, review and commit.
-
----
-
-## YouTube: Build It From Scratch
-
-If you'd rather follow along and build Cube Runner from zero, check out the `tutorial/cube-runner-from-scratch` branch. That's the companion to the YouTube series — step by step, no shortcuts.
-
-```bash
-git checkout tutorial/cube-runner-from-scratch
-```
 
 ---
 
