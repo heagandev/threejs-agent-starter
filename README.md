@@ -1,19 +1,14 @@
-# AI Game Dev Quickstart Guide
+# Three.js Game Dev Starter Pack
 
-**A working Three.js browser game — ready to extend with any AI agent.**
+**A solid foundation for building browser game prototypes — fast, with any AI agent.**
 
-Clone it. Run it. Paste a prompt. Start building.
+Clone it. Describe your game. Start building.
 
-No blank canvas. No setup friction. No fighting your AI to stay on track — the architecture rules and skill files are already wired in.
+No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
 > 🚀 **Want the production-ready upgrade?**
 > The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
-> [→ Get early access to the Pro Kit](https://heagan.dev) <!-- replace with Gumroad link -->
-
----
-
-<!-- Replace with actual GIF or screenshot once ready -->
-<!-- ![Cube Runner gameplay](./public/preview.gif) -->
+> [→ Get early access to the Pro Kit](https://heagan.dev)
 
 ---
 
@@ -21,11 +16,10 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 
 | | |
 |---|---|
-| 🎮 | **Cube Runner** — a fully playable dodge game, ready to extend |
+| ⚙️ | **Vite + TypeScript + Three.js** — zero config, runs instantly |
 | 🧠 | **10 Three.js skill files** your agent loads automatically |
-| 📋 | **4 prompt files** to extend the game feature by feature |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
-| 🌿 | **`new-game` branch** — blank canvas + `/plan` prompt to design your own game from scratch |
+| 🌿 | **Clean `src/main.ts`** — ready for your game, not someone else's |
 
 ---
 
@@ -34,40 +28,39 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 ```bash
 git clone https://github.com/heagan/threejs-vite-starter
 cd threejs-vite-starter
+git checkout new-game
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) — the game runs immediately.
+Open [http://localhost:5173](http://localhost:5173) — the dev server is live.
 
 ---
 
-## Building With Your Agent
+## Building Your Prototype
 
 This kit is designed to work with any AI coding agent — Claude Code, Codex, Cursor, Windsurf, Copilot, or any tool that reads files from your repo.
-
-Paste any prompt file into your agent to add a feature:
-
-| Prompt | What it builds |
-|---|---|
-| `/power-ups` | Speed boost, shield, and slow-mo power-up system |
-| `/game-juice` | Screen shake, squash/stretch, score milestones |
-| `/level-two` | A second level with transitions |
-| `/plan` | Plan an entirely new game from scratch (`git checkout new-game` first) |
 
 **Recommended workflow:**
 
 ```bash
-# Start a new feature on its own branch
-git checkout -b feat/power-ups
+# 1. Create a branch for your game
+git checkout -b my-game
 
-# Paste prompts/power-ups.md into your agent
-# Review the output, then commit when it works
+# 2. Open your agent and describe what you want to build
+# The agent reads AGENTS.md automatically and follows the architecture rules
 
-git add -A && git commit -m "feat: add power-up system"
+# 3. Iterate — review output, run it, commit when it works
+git add -A && git commit -m "feat: initial game prototype"
 ```
 
-Your agent reads `AGENTS.md` automatically and follows the architecture rules — no extra setup needed.
+**What to tell your agent to get started:**
+
+- What kind of game? (top-down shooter, platformer, puzzle, arcade...)
+- What is the player doing every second?
+- What ends the game?
+
+That's enough. The kit handles the rest — renderer setup, game loop, resize handling, delta capping, and a clean class structure.
 
 ---
 
@@ -90,19 +83,18 @@ The `skills/` folder contains Three.js reference sheets. Your agent loads them v
 
 ---
 
-## What to Build Next
+## What to Build
 
-Once you've run through the included prompts, here are directions worth exploring:
+Some directions worth exploring once your core loop is working:
 
-- **Make other games** — checkout `new-game` branch and use `/plan` to design something original with your agent
-- **Mobile controls** — add touch/swipe input for mobile players
-- **Leaderboard** — score submission with a simple backend
-- **Custom shaders** — visual effects via `skills/threejs-shaders.md`
-- **Spatial audio** — sound design with the Web Audio API
-- **Level editor** — let players build their own obstacle layouts
+- **Mobile controls** — touch/swipe input for mobile players
+- **Game juice** — screen shake, hit flash, score milestones
 - **Procedural generation** — infinite levels from a seed
+- **Spatial audio** — sound design with the Web Audio API
+- **Custom shaders** — visual effects via `skills/threejs-shaders.md`
+- **Leaderboard** — score submission with a simple backend
 
-Each one makes a great agent session. Open a branch, paste a prompt, review and commit.
+Each one makes a great focused agent session. Open a branch, describe the feature, review and commit.
 
 ---
 
@@ -129,4 +121,4 @@ This is the free starter. Here's what the paid kits add:
 | **Pro Kit** | React Three Fiber architecture, real project structure, case study branches, Vercel deploy | $49 at launch → $79 |
 | **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, prompts to /10 | $79 at launch → $99 |
 
-[→ Get early access and launch pricing at heagan.dev](https://heagan.dev) <!-- replace with Gumroad link -->
+[→ Get early access and launch pricing at heagan.dev](https://heagan.dev)
