@@ -21,6 +21,7 @@ canvas {
   position: absolute;
   top: 0;
   left: 0;
+  touch-action: none;
 }
 
 #hud {
@@ -88,7 +89,7 @@ canvas {
 
 /* ── Mobile D-pad controls — hidden on desktop ── */
 #mobile-controls {
-  display: none;
+  display: flex;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -144,9 +145,9 @@ canvas {
   background: rgba(255,255,0,0.25);
 }
 
-/* Show mobile controls on touch devices */
-@media (hover: none) and (pointer: coarse) {
+/* Hide D-pad on desktop (mouse/trackpad) */
+@media (hover: hover) and (pointer: fine) {
   #mobile-controls {
-    display: block;
+    display: none;
   }
 }
