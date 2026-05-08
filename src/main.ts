@@ -120,8 +120,8 @@ class AsteroidsGame {
     // Starfield
     this.createStarfield()
 
-    // Build HUD HTML
-    app.innerHTML += `
+    // Build HUD HTML — inject via insertAdjacentHTML to avoid nuking the canvas
+    app.insertAdjacentHTML('beforeend', `
       <div id="hud">
         <span id="score">SCORE: 0</span>
         <span id="wave"></span>
@@ -145,7 +145,7 @@ class AsteroidsGame {
         <div id="ctrl-brake" class="ctrl-btn" data-key="ArrowDown">▼</div>
         <div id="ctrl-fire"  class="ctrl-btn ctrl-fire" data-key="Space">FIRE</div>
       </div>
-    `
+    `)
 
     this.menuOverlay = document.getElementById('menu-overlay')!
     this.gameOverOverlay = document.getElementById('gameover-overlay')!
