@@ -130,11 +130,20 @@ class AsteroidsGame {
       <div id="menu-overlay" class="screen-overlay">
         <h1>ASTEROIDS 3D</h1>
         <p>PRESS ENTER TO PLAY</p>
+        <button class="start-btn" id="start-btn">TAP TO PLAY</button>
       </div>
       <div id="gameover-overlay" class="screen-overlay hidden">
         <h1>GAME OVER</h1>
         <p id="final-score">SCORE: 0</p>
         <p>PRESS ENTER TO RESTART</p>
+        <button class="start-btn" id="restart-btn">TAP TO RESTART</button>
+      </div>
+      <div id="mobile-controls">
+        <div id="ctrl-left"  class="ctrl-btn" data-key="ArrowLeft">◀</div>
+        <div id="ctrl-thrust" class="ctrl-btn" data-key="ArrowUp">▲</div>
+        <div id="ctrl-right" class="ctrl-btn" data-key="ArrowRight">▶</div>
+        <div id="ctrl-brake" class="ctrl-btn" data-key="ArrowDown">▼</div>
+        <div id="ctrl-fire"  class="ctrl-btn ctrl-fire" data-key="Space">FIRE</div>
       </div>
     `
 
@@ -153,6 +162,31 @@ class AsteroidsGame {
     window.addEventListener('keydown', this.boundOnKeyDown)
     window.addEventListener('keyup', this.boundOnKeyUp)
     window.addEventListener('resize', this.boundOnResize)
+
+    // Mobile: tap start/restart buttons
+    document.getElementById('start-btn')?.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      if (this.phase === GamePhase.MENU) this.startGame()
+    }, { passive: false })
+    document.getElementById('restart-btn')?.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      if (this.phase === GamePhase.GAME_OVER) this.startGame()
+    }, { passive: false })
+
+    // Mobile: D-pad touch controls
+    document.querySelectorAll<HTMLElement>('.ctrl-btn').forEach((btn) => {
+      const key = btn.dataset.key!
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        this.keys.add(key)
+        if (key === 'Space' && this.phase === GamePhase.PLAYING) this.fireBullet()
+      }, { passive: false })
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault()
+        this.keys.delete(key)
+      }, { passive: false })
+      btn.addEventListener('touchcancel', () => this.keys.delete(key))
+    })
 
     this.animate()
   }
