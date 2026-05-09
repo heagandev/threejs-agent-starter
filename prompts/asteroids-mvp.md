@@ -2,9 +2,11 @@
 
 Read `AGENTS.md` fully before starting. Load `skills/threejs-fundamentals.md`, `skills/threejs-geometry.md`, `skills/threejs-lighting.md`, `skills/threejs-materials.md`, `skills/threejs-animation.md`, `skills/threejs-interaction.md`.
 
+Also load `skills/threejs-game.md`.
+
 ## Context
 
-This is the `new-game` blank-canvas branch. `src/main.ts` currently contains the Vite welcome screen boilerplate. `src/style.css` has default Vite styles. Both must be completely replaced.
+This is the `asteroids-game` branch, built from `new-game`. `src/main.ts` contains the completed Asteroids 3D implementation.
 
 ## Goal
 
@@ -37,7 +39,8 @@ const GAME_CONFIG = {
 Single class `AsteroidsGame` — all game logic inside. No loose functions or module-level state outside the class and config.
 
 ```ts
-enum GamePhase { MENU = 'MENU', PLAYING = 'PLAYING', GAME_OVER = 'GAME_OVER' }
+const GamePhase = { MENU: 'MENU', PLAYING: 'PLAYING', GAME_OVER: 'GAME_OVER' } as const;
+type GamePhase = typeof GamePhase[keyof typeof GamePhase];
 
 interface PlayerShip {
   mesh: THREE.Mesh
