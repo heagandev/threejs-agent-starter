@@ -1,12 +1,22 @@
-# /plan — Game Planning Prompt
+# /plan — Design Your Game
 
-You are a game design collaborator. Your job is to help the developer plan a game **before writing any code**.
+Read `AGENTS.md` fully before starting. Load `skills/threejs-game.md`.
 
 ---
 
-## Instructions
+## What This Prompt Does
 
-Ask the developer the following questions one group at a time. Wait for their answers before moving on. Do not ask all questions at once.
+`/plan` is a **planning-only session**. It produces a structured game plan as a markdown document.
+No code is written. No files are modified except to save the plan output.
+
+Use it before any build session — the plan becomes the brief for your first feature prompt.
+
+---
+
+## Instructions for the Agent
+
+Ask the developer the following questions **one group at a time**. Wait for their response before
+moving to the next group. Do not ask all questions at once.
 
 ---
 
@@ -14,34 +24,75 @@ Ask the developer the following questions one group at a time. Wait for their an
 
 1. What is the game? Describe it in one or two sentences.
 2. What does the player control, and how do they control it?
-3. What is the win condition or goal? What is the fail condition?
+3. What is the goal? What ends the game?
 
 ---
 
-### Group 2 — Gameplay
+### Group 2 — Gameplay Loop
 
-4. How does difficulty progress? (speed ramp, more obstacles, randomness?)
-5. Are there power-ups, collectibles, or special mechanics?
-6. Are there multiple levels or is it endless?
-
----
-
-### Group 3 — Feel & Juice
-
-7. What should the game feel like? (fast and tense, relaxed, punishing, arcadey?)
-8. Any visual style references? (minimalist, neon, retro, realistic?)
-9. What moments should feel especially satisfying or impactful?
+4. How does difficulty progress? (speed ramp, enemy waves, procedural generation, timer pressure?)
+5. Are there power-ups, collectibles, or special mechanics beyond the core loop?
+6. Is it endless, level-based, or does it have a defined end?
 
 ---
 
-## Output
+### Group 3 — Feel & Style
 
-Once you have the answers, produce a **Game Plan** with:
+7. What should it feel like to play? (tense and fast, relaxed, punishing, arcadey, satisfying combos?)
+8. Any visual style reference? (minimalist, neon, retro pixel, clean geometric, dark/moody?)
+9. What one or two moments should feel especially good — the hit that matters, the close call, the reward?
 
-- **One-line pitch** — what the game is in a single sentence
-- **Player controls** — exact keys and what they do
-- **Game phases** — `MENU`, `PLAYING`, `GAME_OVER` and what triggers each
-- **Feature checklist** — ordered list of features to build, from core loop to polish
-- **First branch** — the first `git branch feat/...` to create after the base game is running
+---
 
-Do not write any code. Do not suggest specific implementation details. Planning only.
+## Output Format
+
+Once you have all answers, produce a **Game Plan** document with the following sections.
+Output only — do not write any code or modify any source file.
+
+---
+
+### Game Plan: [Game Name]
+
+**Pitch** — One sentence. What is this game?
+
+**Player controls**
+
+| Key / Input | Action |
+|---|---|
+| ... | ... |
+
+**Game phases**
+
+| Phase | Triggered by |
+|---|---|
+| `MENU` | ... |
+| `PLAYING` | ... |
+| `GAME_OVER` | ... |
+
+**GAME_CONFIG keys** — list every tunable value the game will need (name + initial value).
+
+**Feature build order** — ordered checklist from core loop to polish. Each item should be
+completable in a single agent session.
+
+- [ ] Scene setup + player object
+- [ ] Core movement / input
+- [ ] Core mechanic (e.g. shooting, bouncing, dodging)
+- [ ] Win / lose condition + game-over screen
+- [ ] Difficulty progression
+- [ ] Score / HUD
+- [ ] Sound effects (Web Audio beeps — no assets needed)
+- [ ] Mobile touch controls
+- [ ] Game feel: screen shake, squash-stretch, particle bursts
+- [ ] Power-ups or special mechanic (if applicable)
+
+**First branch name** — `feat/<slug>` — what to build first after the base game runs.
+
+**Suggested commit message** for the initial build session.
+
+---
+
+## After the Plan
+
+Share the plan with the developer. When they approve it, the next step is a build session using the
+plan as the brief. The first build session should target only the first 4–5 items on the feature
+checklist — enough to have a playable loop running.
