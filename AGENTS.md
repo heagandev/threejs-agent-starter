@@ -71,3 +71,4 @@ The `skills/` folder contains reference sheets for Three.js topics. Load the rel
 - `threejs-shaders.md` — GLSL, ShaderMaterial
 - `threejs-postprocessing.md` — bloom, effects
 - `threejs-loaders.md` — GLTF, asset loading
+- `threejs-game.md` — game loop, input, collision, HUD, audio, game-feel patterns
