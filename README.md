@@ -22,7 +22,7 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 | | |
 |---|---|
 | 🎮 | **Cube Runner** — a fully playable dodge game, ready to extend |
-| 🧠 | **10 Three.js skill files** your agent loads automatically |
+| 🧠 | **11 Three.js skill files** your agent loads automatically |
 | 📋 | **4 prompt files** to extend the game feature by feature |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
 | 🌿 | **`new-game` branch** — blank canvas + `/plan` prompt to design your own game from scratch |
@@ -87,6 +87,7 @@ The `skills/` folder contains Three.js reference sheets. Your agent loads them v
 | `threejs-shaders.md` | GLSL, ShaderMaterial |
 | `threejs-postprocessing.md` | Bloom, effects |
 | `threejs-loaders.md` | GLTF, asset loading |
+| `threejs-game.md` | Game loop, input, collision, HUD, audio, game-feel patterns |
 
 ---
 
