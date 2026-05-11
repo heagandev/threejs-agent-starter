@@ -17,7 +17,7 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 | | |
 |---|---|
 | ⚙️ | **Vite + TypeScript + Three.js** — zero config, runs instantly |
-| 🧠 | **10 Three.js skill files** your agent loads automatically |
+| 🧠 | **11 Three.js skill files** your agent loads automatically |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
 | 🌿 | **Clean `src/main.ts`** — ready for your game, not someone else's |
 
@@ -80,6 +80,7 @@ The `skills/` folder contains Three.js reference sheets. Your agent loads them v
 | `threejs-shaders.md` | GLSL, ShaderMaterial |
 | `threejs-postprocessing.md` | Bloom, effects |
 | `threejs-loaders.md` | GLTF, asset loading |
+| `threejs-game.md` | Game loop, input, collision, HUD, audio, game-feel patterns |
 
 ---
 
