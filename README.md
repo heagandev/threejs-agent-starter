@@ -10,7 +10,7 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 
 ---
 
-![Block Breaker gameplay](public/block-breaker.png)
+<video autoplay loop muted playsinline src="public/block-breaker.mp4"></video>
 
 ---
 

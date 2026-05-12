@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "capture": "node scripts/capture-game.mjs",
+    "capture:compile": "node scripts/capture-game.mjs --compile"
   },
   "devDependencies": {
     "@types/three": "^0.184.0",
