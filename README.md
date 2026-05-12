@@ -6,9 +6,15 @@ Clone it. Describe your game. Start building.
 
 No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
+![Asteroids — example game built with this kit](public/asteroids.png)
+
+![Cube Runner — example game built with this kit](public/cube-runner.gif)
+
+![Three.js Game Dev Starter Pack — example games built with this kit](public/thumbnail.png)
+
 > 🚀 **Want the production-ready upgrade?**
 > The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
-> [→ Get early access to the Pro Kit](https://heagan.dev)
+> [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter)
 
 ---
 
@@ -26,7 +32,7 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 ## Quickstart
 
 ```bash
-git clone https://github.com/heagan/threejs-vite-starter
+git clone https://github.com/heagandev/threejs-agent-starter
 cd threejs-vite-starter
 git checkout new-game
 npm install
@@ -122,4 +128,4 @@ This is the free starter. Here's what the paid kits add:
 | **Pro Kit** | React Three Fiber architecture, real project structure, case study branches, Vercel deploy | $49 at launch → $79 |
 | **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, prompts to /10 | $79 at launch → $99 |
 
-[→ Get early access and launch pricing at heagan.dev](https://heagan.dev)
+[→ See all kits on Gumroad](https://heagandev.gumroad.com)
