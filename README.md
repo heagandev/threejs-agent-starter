@@ -13,7 +13,7 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 ---
 
 <!-- Replace with actual GIF or screenshot once ready -->
-![Cube Runner gameplay](public/cube-runner.gif)
+<video autoplay loop muted playsinline src="public/cube-runner.mp4"></video>
 
 ---
 

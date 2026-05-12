@@ -112,7 +112,7 @@ class CubeRunnerGame {
     this.gameOver = this.requireElement<HTMLDivElement>('game-over')
     this.gameOverScore = this.requireElement<HTMLParagraphElement>('final-score')
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
