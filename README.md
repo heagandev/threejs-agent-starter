@@ -1,4 +1,4 @@
-# AI Game Dev Quickstart Guide
+# Three.js Game Dev Starter Pack — Cube Runner
 
 **A working Three.js browser game — ready to extend with any AI agent.**
 
