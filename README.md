@@ -6,7 +6,9 @@ Clone it. Describe your game. Start building.
 
 No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
-![Three.js Game Dev Starter Pack — example games built with this kit](public/thumbnail.png)
+<video autoplay loop muted playsinline src="public/thumbnail.mp4"></video>
+
+> 🎬 *Cube Runner · Asteroids · Block Breaker — all built with this kit in a single agent session.*
 
 > 🚀 **Want the production-ready upgrade?**
 > The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
