@@ -10,7 +10,7 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 
 ---
 
-![Block Breaker gameplay](public/thumbnail.png)
+![Block Breaker gameplay](public/block-breaker.png)
 
 ---
 
