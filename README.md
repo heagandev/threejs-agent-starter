@@ -6,7 +6,11 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 
 > 🚀 **Want the production-ready upgrade?**
 > The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
-> [→ Get early access to the Pro Kit](https://heagan.dev)
+> [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter)
+
+---
+
+![Asteroids 3D gameplay](public/asteroids.png)
 
 ---
 
@@ -26,8 +30,8 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 
 ```bash
 git clone https://github.com/heagandev/threejs-agent-starter
-cd threejs-vite-starter
-git checkout asteroids-game
+cd threejs-agent-starter
+git checkout asteroids
 npm install
 npm run dev
 ```
@@ -118,4 +122,4 @@ This is the free starter. Here's what the paid kits add:
 | **Pro Kit** | React Three Fiber architecture, real project structure, case study branches, Vercel deploy | $49 at launch → $79 |
 | **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, prompts to /10 | $79 at launch → $99 |
 
-[→ Get early access and launch pricing at heagan.dev](https://heagan.dev)
+[→ Get early access and launch pricing at heagan.dev](https://heagandev.gumroad.com/l/hdev-starter)
