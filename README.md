@@ -25,7 +25,7 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 ## Quickstart
 
 ```bash
-git clone https://github.com/heagan/threejs-vite-starter
+git clone https://github.com/heagandev/threejs-agent-starter
 cd threejs-vite-starter
 git checkout asteroids-game
 npm install
