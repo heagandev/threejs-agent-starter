@@ -10,7 +10,7 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 
 ---
 
-![Asteroids 3D gameplay](public/asteroids.png)
+<video autoplay loop muted playsinline src="public/asteroids.mp4"></video>
 
 ---
 
