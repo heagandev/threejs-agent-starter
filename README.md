@@ -6,10 +6,6 @@ Clone it. Describe your game. Start building.
 
 No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
-![Asteroids — example game built with this kit](public/asteroids.png)
-
-![Cube Runner — example game built with this kit](public/cube-runner.gif)
-
 ![Three.js Game Dev Starter Pack — example games built with this kit](public/thumbnail.png)
 
 > 🚀 **Want the production-ready upgrade?**
