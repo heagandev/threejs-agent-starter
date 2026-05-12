@@ -32,7 +32,7 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 ## Quickstart
 
 ```bash
-git clone https://github.com/heagan/threejs-vite-starter
+git clone https://github.com/heagandev/threejs-agent-starter
 cd threejs-vite-starter
 npm install
 npm run dev
