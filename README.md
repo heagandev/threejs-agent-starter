@@ -8,12 +8,12 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 
 > 🚀 **Want the production-ready upgrade?**
 > The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
-> [→ Get early access to the Pro Kit](https://heagan.dev) <!-- replace with Gumroad link -->
+> [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter) <!-- replace with Gumroad link -->
 
 ---
 
 <!-- Replace with actual GIF or screenshot once ready -->
-<!-- ![Cube Runner gameplay](./public/preview.gif) -->
+![Cube Runner gameplay](public/cube-runner.gif)
 
 ---
 
@@ -33,7 +33,7 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 
 ```bash
 git clone https://github.com/heagandev/threejs-agent-starter
-cd threejs-vite-starter
+cd threejs-agent-starter
 npm install
 npm run dev
 ```
@@ -130,4 +130,4 @@ This is the free starter. Here's what the paid kits add:
 | **Pro Kit** | React Three Fiber architecture, real project structure, case study branches, Vercel deploy | $49 at launch → $79 |
 | **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, prompts to /10 | $79 at launch → $99 |
 
-[→ Get early access and launch pricing at heagan.dev](https://heagan.dev) <!-- replace with Gumroad link -->
+[→ Get early access and launch pricing at heagan.dev](https://heagandev.gumroad.com/l/hdev-starter) <!-- replace with Gumroad link -->
