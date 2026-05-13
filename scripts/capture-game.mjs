@@ -2,179 +2,269 @@
 /**
  * capture-game.mjs
  *
- * Records a smooth MP4 preview of a game branch running on localhost.
- * Uses the Hermes playwright + chromium — no separate install needed.
+ * Records a smooth MP4 preview of a game running on localhost.
+ * Uses Playwright's built-in recordVideo (WebM → MP4 via ffmpeg).
+ * No manual frame loop — browser renders at native speed, Playwright
+ * records the canvas, ffmpeg converts the output.
  *
  * Usage:
- *   npm run dev &          # start the dev server first
- *   node scripts/capture-game.mjs [options]
+ *   npm run dev &
+ *   npm run capture -- --game cube-runner
+ *   npm run capture -- --game asteroids
+ *   npm run capture -- --game block-breaker
+ *   npm run capture:compile   # stitch all three into thumbnail.mp4
  *
  * Options:
- *   --url       Dev server URL            (default: http://localhost:5173)
- *   --out       Output MP4 path           (default: public/<branch>.mp4)
- *   --duration  Recording duration (secs) (default: 10)
- *   --width     Viewport width            (default: 960)
- *   --height    Viewport height           (default: 600)
- *   --fps       Capture frame rate        (default: 30)
- *   --wait      Seconds to wait before recording (default: 2)
+ *   --game      Game branch name: cube-runner | asteroids | block-breaker
+ *               Loads per-game input sequence automatically.
+ *   --url       Dev server URL          (default: http://localhost:5173)
+ *   --out       Output MP4 path         (default: public/<game>.mp4)
+ *   --duration  Recording duration secs (default: 12)
+ *   --width     Viewport width          (default: 960)
+ *   --height    Viewport height         (default: 600)
  *
- * Example:
- *   node scripts/capture-game.mjs --out public/cube-runner.mp4 --duration 12
- *
- * Compilation script (all branches → compilation MP4 for new-game):
- *   node scripts/capture-game.mjs --compile public/cube-runner.mp4 public/asteroids.mp4 public/block-breaker.mp4 --out public/thumbnail.mp4
+ * Compile mode (stitch all games into one MP4 for new-game branch):
+ *   npm run capture:compile
+ *   # Expects public/cube-runner.mp4, public/asteroids.mp4, public/block-breaker.mp4
+ *   # Outputs public/thumbnail.mp4
  */
 
-import { execSync, spawn } from 'child_process';
-import { existsSync, mkdirSync, rmSync } from 'fs';
+import { execSync } from 'child_process';
+import { existsSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import os from 'os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = resolve(__dirname, '..');
+const REPO_ROOT  = resolve(__dirname, '..');
 
-// ── Parse args ────────────────────────────────────────────────────────────────
-const args = process.argv.slice(2);
-const get = (flag, def) => {
-  const i = args.indexOf(flag);
-  return i !== -1 ? args[i + 1] : def;
+// ─── Playwright / Chromium paths (uses Hermes install, no extra deps) ─────────
+const HERMES_MODULES = '/home/hdev/.hermes/hermes-agent/node_modules';
+const CHROMIUM_BIN   = '/home/hdev/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome';
+
+// ─── Per-game input sequences ─────────────────────────────────────────────────
+// Each step: { type, key?, delay } where type = 'wait' | 'key' | 'hold' | 'release'
+// 'hold' presses and holds a key; 'release' lets it go; 'wait' pauses (ms).
+const GAME_SEQUENCES = {
+  'cube-runner': [
+    { type: 'wait',  delay: 1500 },               // let menu render
+    { type: 'key',   key: 'Space' },               // start game
+    { type: 'wait',  delay: 1000 },               // gameplay begins
+    { type: 'hold',  key: 'ArrowLeft' },
+    { type: 'wait',  delay: 800 },
+    { type: 'release', key: 'ArrowLeft' },
+    { type: 'wait',  delay: 600 },
+    { type: 'hold',  key: 'ArrowRight' },
+    { type: 'wait',  delay: 700 },
+    { type: 'release', key: 'ArrowRight' },
+    // keep weaving for remainder of recording
+    { type: 'wait',  delay: 500 }, { type: 'hold', key: 'ArrowLeft' },
+    { type: 'wait',  delay: 600 }, { type: 'release', key: 'ArrowLeft' },
+    { type: 'wait',  delay: 400 }, { type: 'hold', key: 'ArrowRight' },
+    { type: 'wait',  delay: 800 }, { type: 'release', key: 'ArrowRight' },
+    { type: 'wait',  delay: 400 }, { type: 'hold', key: 'ArrowLeft' },
+    { type: 'wait',  delay: 700 }, { type: 'release', key: 'ArrowLeft' },
+    { type: 'wait',  delay: 500 }, { type: 'hold', key: 'ArrowRight' },
+    { type: 'wait',  delay: 600 }, { type: 'release', key: 'ArrowRight' },
+  ],
+
+  'asteroids': [
+    { type: 'wait',  delay: 1500 },
+    { type: 'key',   key: 'Space' },               // start game
+    { type: 'wait',  delay: 800 },
+    { type: 'key',   key: 'Space' },               // fire
+    { type: 'hold',  key: 'ArrowLeft' },
+    { type: 'wait',  delay: 600 },
+    { type: 'release', key: 'ArrowLeft' },
+    { type: 'hold',  key: 'ArrowUp' },             // thrust
+    { type: 'wait',  delay: 500 },
+    { type: 'key',   key: 'Space' },               // fire
+    { type: 'wait',  delay: 300 },
+    { type: 'key',   key: 'Space' },
+    { type: 'release', key: 'ArrowUp' },
+    { type: 'wait',  delay: 400 },
+    { type: 'hold',  key: 'ArrowRight' },
+    { type: 'wait',  delay: 700 },
+    { type: 'key',   key: 'Space' },
+    { type: 'release', key: 'ArrowRight' },
+    { type: 'hold',  key: 'ArrowUp' },
+    { type: 'wait',  delay: 800 },
+    { type: 'key',   key: 'Space' },
+    { type: 'wait',  delay: 400 },
+    { type: 'key',   key: 'Space' },
+    { type: 'release', key: 'ArrowUp' },
+    { type: 'wait',  delay: 500 },
+    { type: 'hold',  key: 'ArrowLeft' },
+    { type: 'wait',  delay: 600 },
+    { type: 'key',   key: 'Space' },
+    { type: 'release', key: 'ArrowLeft' },
+  ],
+
+  'block-breaker': [
+    { type: 'wait',  delay: 1500 },
+    { type: 'key',   key: 'Space' },               // start / launch ball
+    { type: 'wait',  delay: 800 },
+    { type: 'hold',  key: 'ArrowRight' },
+    { type: 'wait',  delay: 600 },
+    { type: 'release', key: 'ArrowRight' },
+    { type: 'hold',  key: 'ArrowLeft' },
+    { type: 'wait',  delay: 800 },
+    { type: 'release', key: 'ArrowLeft' },
+    { type: 'hold',  key: 'ArrowRight' },
+    { type: 'wait',  delay: 700 },
+    { type: 'release', key: 'ArrowRight' },
+    { type: 'hold',  key: 'ArrowLeft' },
+    { type: 'wait',  delay: 500 },
+    { type: 'release', key: 'ArrowLeft' },
+    { type: 'hold',  key: 'ArrowRight' },
+    { type: 'wait',  delay: 900 },
+    { type: 'release', key: 'ArrowRight' },
+    { type: 'hold',  key: 'ArrowLeft' },
+    { type: 'wait',  delay: 600 },
+    { type: 'release', key: 'ArrowLeft' },
+  ],
 };
-const has = (flag) => args.includes(flag);
 
-// Compile mode: concatenate existing MP4s
+// ─── Parse args ───────────────────────────────────────────────────────────────
+const args   = process.argv.slice(2);
+const get    = (flag, def) => { const i = args.indexOf(flag); return i !== -1 ? args[i + 1] : def; };
+const has    = (flag) => args.includes(flag);
+
+// ─── Compile mode ─────────────────────────────────────────────────────────────
 if (has('--compile')) {
-  const outFlag = args.indexOf('--out');
-  const out = outFlag !== -1 ? args[outFlag + 1] : 'public/thumbnail.mp4';
-  const inputs = args.slice(args.indexOf('--compile') + 1).filter(a => !a.startsWith('--') && a !== out);
-  compileClips(inputs, out);
+  const clips = ['public/cube-runner.mp4', 'public/asteroids.mp4', 'public/block-breaker.mp4']
+    .map(f => resolve(REPO_ROOT, f));
+  const out = resolve(REPO_ROOT, get('--out', 'public/thumbnail.mp4'));
+  compileClips(clips, out);
   process.exit(0);
 }
 
-const URL     = get('--url',      'http://localhost:5173');
-const OUT     = resolve(REPO_ROOT, get('--out', 'public/preview.mp4'));
-const DURATION = parseFloat(get('--duration', '10'));
-const WIDTH   = parseInt(get('--width',  '960'));
-const HEIGHT  = parseInt(get('--height', '600'));
-const FPS     = parseInt(get('--fps',    '30'));
-const WAIT    = parseFloat(get('--wait', '2'));
+// ─── Main record mode ─────────────────────────────────────────────────────────
+const GAME     = get('--game', null);
+const URL      = get('--url', 'http://localhost:5173');
+const DURATION = parseFloat(get('--duration', '12')) * 1000; // ms
+const WIDTH    = parseInt(get('--width', '960'));
+const HEIGHT   = parseInt(get('--height', '600'));
+const OUT      = resolve(REPO_ROOT, get('--out', GAME ? `public/${GAME}.mp4` : 'public/preview.mp4'));
 
-// ── Paths ─────────────────────────────────────────────────────────────────────
-const HERMES_NODE = '/home/hdev/.hermes/hermes-agent/node_modules';
-const CHROMIUM    = '/home/hdev/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome';
-const FRAMES_DIR  = join(os.tmpdir(), `game-capture-${Date.now()}`);
-
-// ── Check dependencies ────────────────────────────────────────────────────────
-try { execSync('which ffmpeg', { stdio: 'ignore' }); }
-catch { console.error('❌ ffmpeg not found. Install with: sudo apt install ffmpeg'); process.exit(1); }
-
-if (!existsSync(CHROMIUM)) {
-  console.error(`❌ Chromium not found at ${CHROMIUM}`);
-  console.error('   Run: npx playwright install chromium');
+if (!GAME || !GAME_SEQUENCES[GAME]) {
+  console.error(`❌ --game required. Valid options: ${Object.keys(GAME_SEQUENCES).join(' | ')}`);
   process.exit(1);
 }
 
-// ── Dynamic import playwright from hermes ────────────────────────────────────
-const { chromium } = await import(`${HERMES_NODE}/playwright/index.mjs`);
+// ─── Dependency checks ────────────────────────────────────────────────────────
+try { execSync('which ffmpeg', { stdio: 'ignore' }); }
+catch { console.error('❌ ffmpeg not found. Install: sudo apt install ffmpeg'); process.exit(1); }
 
-console.log(`🎬 Capturing ${URL} → ${OUT}`);
-console.log(`   ${WIDTH}×${HEIGHT} @ ${FPS}fps for ${DURATION}s (${WAIT}s startup wait)`);
+if (!existsSync(CHROMIUM_BIN)) {
+  console.error(`❌ Chromium not found at ${CHROMIUM_BIN}`);
+  process.exit(1);
+}
 
-mkdirSync(FRAMES_DIR, { recursive: true });
+// ─── Record ───────────────────────────────────────────────────────────────────
+const { chromium } = await import(`${HERMES_MODULES}/playwright/index.mjs`);
+
+const TMP_DIR = join(os.tmpdir(), `game-capture-${Date.now()}`);
+mkdirSync(TMP_DIR, { recursive: true });
 mkdirSync(dirname(OUT), { recursive: true });
 
-// ── Launch browser ────────────────────────────────────────────────────────────
+console.log(`🎬  Recording: ${GAME}`);
+console.log(`    URL      : ${URL}`);
+console.log(`    Size     : ${WIDTH}×${HEIGHT}`);
+console.log(`    Duration : ${DURATION / 1000}s`);
+console.log(`    Output   : ${OUT}`);
+
 const browser = await chromium.launch({
-  executablePath: CHROMIUM,
-  args: [
-    '--enable-gpu',
-    '--use-gl=egl',
-    '--disable-gpu-sandbox',
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-  ],
+  executablePath: CHROMIUM_BIN,
+  args: ['--enable-gpu', '--use-gl=egl', '--disable-gpu-sandbox', '--no-sandbox'],
   headless: true,
 });
 
-const page = await browser.newPage();
-await page.setViewportSize({ width: WIDTH, height: HEIGHT });
+const context = await browser.newContext({
+  viewport: { width: WIDTH, height: HEIGHT },
+  recordVideo: {
+    dir: TMP_DIR,
+    size: { width: WIDTH, height: HEIGHT },
+  },
+});
 
-console.log(`   Loading ${URL}...`);
+const page = await context.newPage();
 await page.goto(URL, { waitUntil: 'networkidle' });
 
-// Dismiss any start screen by simulating a click + key press
-await page.click('body').catch(() => {});
-await page.keyboard.press('Space').catch(() => {});
-await page.waitForTimeout(WAIT * 1000);
+// ─── Run input sequence ───────────────────────────────────────────────────────
+console.log(`    Running input sequence for ${GAME}...`);
+const sequence = GAME_SEQUENCES[GAME];
+const held = new Set();
 
-// ── Capture frames via RAF ────────────────────────────────────────────────────
-const totalFrames = Math.ceil(DURATION * FPS);
-const frameInterval = 1000 / FPS;
-
-console.log(`   Capturing ${totalFrames} frames...`);
-
-for (let i = 0; i < totalFrames; i++) {
-  // Wait for next animation frame (synced to game render)
-  await page.evaluate(() => new Promise(r => requestAnimationFrame(r)));
-
-  const padded = String(i).padStart(5, '0');
-  await page.screenshot({
-    path: join(FRAMES_DIR, `frame${padded}.png`),
-    clip: { x: 0, y: 0, width: WIDTH, height: HEIGHT },
-  });
-
-  if (i % 30 === 0) process.stdout.write(`   ${i}/${totalFrames}\r`);
+for (const step of sequence) {
+  switch (step.type) {
+    case 'wait':
+      await page.waitForTimeout(step.delay);
+      break;
+    case 'key':
+      await page.keyboard.press(step.key);
+      break;
+    case 'hold':
+      if (!held.has(step.key)) {
+        await page.keyboard.down(step.key);
+        held.add(step.key);
+      }
+      break;
+    case 'release':
+      if (held.has(step.key)) {
+        await page.keyboard.up(step.key);
+        held.delete(step.key);
+      }
+      break;
+  }
 }
 
+// Wait out the remaining duration
+const sequenceDuration = sequence.reduce((acc, s) => acc + (s.delay || 0), 0);
+const remaining = DURATION - sequenceDuration;
+if (remaining > 0) await page.waitForTimeout(remaining);
+
+// Release any still-held keys cleanly
+for (const key of held) await page.keyboard.up(key);
+
+// ─── Stop recording ───────────────────────────────────────────────────────────
+const videoPath = await page.video().path();
+await context.close();
 await browser.close();
-console.log(`\n   Frames captured. Converting to MP4...`);
 
-// ── Convert frames → MP4 via ffmpeg ──────────────────────────────────────────
-const ffmpegCmd = [
-  'ffmpeg', '-y',
-  '-framerate', FPS,
-  '-i', join(FRAMES_DIR, 'frame%05d.png'),
-  '-vf', `scale=${WIDTH}:-2:flags=lanczos`,
-  '-c:v', 'libx264',
-  '-crf', '20',
-  '-preset', 'slow',
-  '-pix_fmt', 'yuv420p',
-  '-movflags', '+faststart',
-  '-an',
-  OUT,
-].map(String);
+// ─── Convert WebM → MP4 ───────────────────────────────────────────────────────
+console.log(`\n    Converting WebM → MP4...`);
+execSync(
+  `ffmpeg -y -i "${videoPath}" ` +
+  `-vf "scale=${WIDTH}:-2:flags=lanczos" ` +
+  `-c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p -movflags +faststart -an ` +
+  `"${OUT}"`,
+  { stdio: 'inherit' }
+);
 
-execSync(ffmpegCmd.join(' '), { stdio: 'inherit' });
+rmSync(TMP_DIR, { recursive: true, force: true });
+const size = execSync(`du -sh "${OUT}"`).toString().split('\t')[0];
+console.log(`\n✅  Done! ${OUT} (${size})`);
 
-// ── Cleanup ───────────────────────────────────────────────────────────────────
-rmSync(FRAMES_DIR, { recursive: true, force: true });
+// ─── Compile helper ───────────────────────────────────────────────────────────
+function compileClips(clips, out) {
+  const missing = clips.filter(f => !existsSync(f));
+  if (missing.length) {
+    console.error('❌ Missing clips:', missing.map(f => f.replace(REPO_ROOT + '/', '')));
+    process.exit(1);
+  }
+  const inputs = clips.flatMap(f => ['-i', `"${f}"`]).join(' ');
+  const n = clips.length;
+  const filterComplex =
+    clips.map((_, i) => `[${i}:v]scale=960:-2:flags=lanczos[v${i}]`).join(';') + ';' +
+    clips.map((_, i) => `[v${i}]`).join('') + `concat=n=${n}:v=1:a=0[out]`;
 
-const size = (execSync(`du -sh ${OUT}`).toString().split('\t')[0]);
-console.log(`\n✅ Done! ${OUT} (${size})`);
-console.log(`   Add to README:\n   <video autoplay loop muted playsinline src="public/${OUT.split('/public/')[1]}"></video>`);
-
-// ── Compile mode ─────────────────────────────────────────────────────────────
-function compileClips(inputs, out) {
-  if (!inputs.length) { console.error('No input files for --compile'); process.exit(1); }
-  const resolvedInputs = inputs.map(f => resolve(REPO_ROOT, f));
-  const missing = resolvedInputs.filter(f => !existsSync(f));
-  if (missing.length) { console.error('Missing files:', missing); process.exit(1); }
-
-  const inputArgs = resolvedInputs.flatMap(f => ['-i', f]);
-  const filterComplex = resolvedInputs.map((_, i) => `[${i}:v]scale=960:-2:flags=lanczos[v${i}]`).join(';')
-    + ';' + resolvedInputs.map((_, i) => `[v${i}]`).join('') + `concat=n=${resolvedInputs.length}:v=1:a=0[out]`;
-
-  const cmd = [
-    'ffmpeg', '-y',
-    ...inputArgs,
-    '-filter_complex', `"${filterComplex}"`,
-    '-map', '"[out]"',
-    '-c:v', 'libx264', '-crf', '20', '-preset', 'slow',
-    '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an',
-    resolve(REPO_ROOT, out),
-  ].join(' ');
-
-  console.log(`🎬 Compiling ${resolvedInputs.length} clips → ${out}`);
-  execSync(cmd, { stdio: 'inherit' });
-  console.log(`✅ Done! ${out}`);
+  console.log(`🎬  Compiling ${n} clips → ${out.replace(REPO_ROOT + '/', '')}`);
+  execSync(
+    `ffmpeg -y ${inputs} -filter_complex "${filterComplex}" -map "[out]" ` +
+    `-c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p -movflags +faststart -an "${out}"`,
+    { stdio: 'inherit' }
+  );
+  const size = execSync(`du -sh "${out}"`).toString().split('\t')[0];
+  console.log(`✅  Done! ${out.replace(REPO_ROOT + '/', '')} (${size})`);
 }
