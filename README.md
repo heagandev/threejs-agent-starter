@@ -10,7 +10,7 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 
 ---
 
-<video autoplay loop muted playsinline src="public/block-breaker.mp4"></video>
+<video autoplay loop muted playsinline src="https://github.com/heagandev/threejs-agent-starter/releases/download/v1.0-media/block-breaker.mp4"></video>
 
 ---
 
