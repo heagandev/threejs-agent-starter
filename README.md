@@ -13,7 +13,7 @@ No blank canvas. No setup friction. No fighting your AI to stay on track — the
 ---
 
 <!-- Replace with actual GIF or screenshot once ready -->
-<video autoplay loop muted playsinline src="https://github.com/heagandev/threejs-agent-starter/releases/download/v1.0-media/cube-runner.mp4"></video>
+![Cube Runner gameplay](public/cube-runner.gif)
 
 ---
 
