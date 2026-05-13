@@ -6,7 +6,7 @@ Clone it. Describe your game. Start building.
 
 No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
-<video autoplay loop muted playsinline src="public/thumbnail.mp4"></video>
+<video autoplay loop muted playsinline src="https://github.com/heagandev/threejs-agent-starter/releases/download/v1.0-media/thumbnail.mp4"></video>
 
 > 🎬 *Cube Runner · Asteroids · Block Breaker — all built with this kit in a single agent session.*
 
