@@ -1,16 +1,16 @@
 # Three.js Game Dev Starter Pack — Asteroids 3D
 
-**A working Three.js Asteroids clone — built from the starter kit using the `/plan` prompt and a single agent session.**
+**A fully playable Asteroids clone — built from the starter kit using the `/plan` prompt and a single agent session.**
 
-Clone it. Run it. Extend it with your agent, or use it as a reference for building your own game.
+Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
-> 🚀 **Want the production-ready upgrade?**
-> The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
-> [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter)
+![Asteroids gameplay](public/asteroids.png)
 
 ---
 
-![Asteroids gameplay](public/asteroids.png)
+> 🚀 **Want the production-ready upgrade?**
+> The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and a deployable Vercel URL — locked at launch pricing right now.
+> [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter)
 
 ---
 
@@ -19,7 +19,7 @@ Clone it. Run it. Extend it with your agent, or use it as a reference for buildi
 | | |
 |---|---|
 | 🎮 | **Asteroids 3D** — ship, bullets, asteroid splitting, waves, lives, score |
-| 🧠 | **11 Three.js skill files** your agent loads automatically |
+| 🧠 | **11 Three.js skill files** your agent loads automatically — no explaining Three.js every session |
 | 📋 | **Prompt files** to extend the game feature by feature |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
 | 🌿 | **`new-game` branch** — blank canvas + `/plan` prompt to design your own game from scratch |
@@ -44,19 +44,22 @@ Controls: `A`/`D` rotate · `W` thrust · `S` brake · `Space` fire
 
 ## How This Was Built
 
-This branch was created from `new-game` using the `/plan` prompt to design the game, then a single agent session to build it:
+This branch was built from [`new-game`](../../tree/new-game) using the `/plan` prompt and a single agent session. That's the whole workflow — and it's exactly what you can do:
 
 ```bash
 git checkout new-game
-git checkout -b asteroids-game
-# paste prompts/asteroids-mvp.md into your agent
+git checkout -b my-game
+# Open your agent, paste prompts/plan.md, describe your game
+# One session later — a playable game exists
 ```
 
-That's the workflow the kit is built around — one branch per game, one agent session per feature.
+One branch per game. One agent session per feature.
 
 ---
 
 ## Building With Your Agent
+
+This kit works with any AI coding agent — Claude Code, Codex, Cursor, Windsurf, Copilot, or any tool that reads files from your repo.
 
 Paste any prompt file into your agent to add a feature:
 
@@ -73,15 +76,17 @@ Paste any prompt file into your agent to add a feature:
 git checkout -b feat/power-ups
 
 # Paste prompts/power-ups.md into your agent
-# Review the output, then commit when it works
+# Review the output, run it, commit when it works
 git add -A && git commit -m "feat: add power-up system"
 ```
+
+Your agent reads `AGENTS.md` automatically and follows the architecture rules — no extra setup needed.
 
 ---
 
 ## Skills
 
-The `skills/` folder contains Three.js reference sheets. Your agent loads them via `AGENTS.md`.
+The `skills/` folder contains Three.js reference sheets. Your agent loads them automatically via `AGENTS.md` — you don't need to explain Three.js in every prompt.
 
 | Skill | Covers |
 |---|---|
@@ -95,7 +100,7 @@ The `skills/` folder contains Three.js reference sheets. Your agent loads them v
 | `threejs-shaders.md` | GLSL, ShaderMaterial |
 | `threejs-postprocessing.md` | Bloom, effects |
 | `threejs-loaders.md` | GLTF, asset loading |
-| `threejs-game.md` | Game loop, input, collision, HUD, audio, game-feel |
+| `threejs-game.md` | Game loop, input, collision, HUD, audio, game-feel patterns |
 
 ---
 
@@ -120,6 +125,6 @@ This is the free starter. Here's what the paid kits add:
 | Kit | What you get | Price |
 |---|---|---|
 | **Pro Kit** | React Three Fiber architecture, real project structure, case study branches, Vercel deploy | $49 at launch → $79 |
-| **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, prompts to /10 | $79 at launch → $99 |
+| **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, advanced prompts | $79 at launch → $99 |
 
-[→ Get early access and launch pricing at heagan.dev](https://heagandev.gumroad.com/l/hdev-starter)
+[→ See all kits on Gumroad](https://heagandev.gumroad.com)
