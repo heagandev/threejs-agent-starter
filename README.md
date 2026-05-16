@@ -1,6 +1,6 @@
 # Three.js Game Dev Starter Pack
 
-**A solid foundation for building browser game prototypes — fast, with any AI agent.**
+**Go from zero to a playable browser game — with any AI agent, in a single session.**
 
 Clone it. Describe your game. Start building.
 
@@ -8,10 +8,12 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 
 ![Three.js Game Dev Starter Pack](public/thumbnail.png)
 
-> 🎬 *Cube Runner · Asteroids · Block Breaker — all built with this kit in a single agent session.*
+> 🎬 *Cube Runner · Asteroids · Block Breaker — all built from this kit in a single agent session each.*
+
+---
 
 > 🚀 **Want the production-ready upgrade?**
-> The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and Vercel deploy — at launch pricing.
+> The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and a deployable Vercel URL — locked at launch pricing right now.
 > [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter)
 
 ---
@@ -21,9 +23,9 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 | | |
 |---|---|
 | ⚙️ | **Vite + TypeScript + Three.js** — zero config, runs instantly |
-| 🧠 | **11 Three.js skill files** your agent loads automatically |
+| 🧠 | **11 Three.js skill files** your agent loads automatically — no explaining Three.js every session |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
-| 🌿 | **Clean `src/main.ts`** — ready for your game, not someone else's |
+| 🌿 | **Clean `src/main.ts`** — your game starts here, not someone else's |
 
 ---
 
@@ -31,19 +33,19 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 
 ```bash
 git clone https://github.com/heagandev/threejs-agent-starter
-cd threejs-vite-starter
+cd threejs-agent-starter
 git checkout new-game
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) — the dev server is live.
+Open [http://localhost:5173](http://localhost:5173) — you'll see a blank canvas. Your game starts here.
 
 ---
 
 ## Building Your Prototype
 
-This kit is designed to work with any AI coding agent — Claude Code, Codex, Cursor, Windsurf, Copilot, or any tool that reads files from your repo.
+This kit works with any AI coding agent — Claude Code, Codex, Cursor, Windsurf, Copilot, or any tool that reads files from your repo.
 
 **Recommended workflow:**
 
@@ -58,19 +60,29 @@ git checkout -b my-game
 git add -A && git commit -m "feat: initial game prototype"
 ```
 
-**What to tell your agent to get started:**
+**Three questions to get started — that's all your agent needs:**
 
 - What kind of game? (top-down shooter, platformer, puzzle, arcade...)
 - What is the player doing every second?
 - What ends the game?
 
-That's enough. The kit handles the rest — renderer setup, game loop, resize handling, delta capping, and a clean class structure.
+The kit handles the rest — renderer setup, game loop, resize handling, delta capping, clean class structure.
+
+---
+
+## Want to see the workflow before you build?
+
+Check out the example branches — each was built from this `new-game` branch using the `/plan` prompt and a single agent session:
+
+- [`cube-runner`](../../tree/cube-runner) — dodge game, ready to extend with prompt files
+- [`asteroids`](../../tree/asteroids) — ship, bullets, asteroid splitting, waves
+- [`block-breaker`](../../tree/block-breaker) — paddle, multi-ball, levels
 
 ---
 
 ## Skills
 
-The `skills/` folder contains Three.js reference sheets. Your agent loads them via `AGENTS.md`, or you can reference them directly in any prompt.
+The `skills/` folder contains Three.js reference sheets. Your agent loads them automatically via `AGENTS.md` — you don't need to explain Three.js in every prompt.
 
 | Skill | Covers |
 |---|---|
@@ -124,6 +136,6 @@ This is the free starter. Here's what the paid kits add:
 | Kit | What you get | Price |
 |---|---|---|
 | **Pro Kit** | React Three Fiber architecture, real project structure, case study branches, Vercel deploy | $49 at launch → $79 |
-| **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, prompts to /10 | $79 at launch → $99 |
+| **Pro Plus** | Everything in Pro + ESLint/Husky guardrails, AI memory system, advanced prompts | $79 at launch → $99 |
 
 [→ See all kits on Gumroad](https://heagandev.gumroad.com)
