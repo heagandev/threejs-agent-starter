@@ -47,7 +47,7 @@ Read this file fully before writing any code.
 
 ## Skills
 
-The `skills/` folder contains reference sheets for Three.js topics. Load the relevant skill before working on that area:
+The `.agents/skills/` folder contains reference sheets for Three.js topics. Load the relevant skill before working on that area:
 
 - `threejs-fundamentals.md` — scene, camera, renderer, transforms
 - `threejs-lighting.md` — lights, shadows
@@ -65,4 +65,4 @@ The `skills/` folder contains reference sheets for Three.js topics. Load the rel
 
 ## Prompts
 
-The `prompts/` folder contains task prompts. When a user references a prompt (e.g. `/plan`, `/power-ups`), read the corresponding file and follow its instructions.
+The `.agents/prompts/` folder contains task prompts. When a user references a prompt (e.g. `/plan`, `/power-ups`), read the corresponding file and follow its instructions.
