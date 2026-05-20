@@ -1,0 +1,40 @@
+name: Deploy Game Branch to GitHub Pages
+
+on:
+  push:
+    branches:
+      - cube-runner
+      - asteroids
+      - block-breaker
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build -- --base=/threejs-agent-starter/${{ github.ref_name }}/
+        env:
+          NODE_ENV: production
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          destination_dir: ${{ github.ref_name }}
+          keep_files: true
