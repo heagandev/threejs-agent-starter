@@ -4,7 +4,7 @@
 
 Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
-![Asteroids gameplay](public/asteroids.png)
+<video src="public/asteroids.mp4" autoplay loop muted playsinline width="100%"></video>
 
 ---
 
