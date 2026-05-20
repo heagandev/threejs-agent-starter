@@ -5,6 +5,8 @@
 Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
 ![Block Breaker gameplay](public/block-breaker.png)
+[**▶ Play Block Breaker**](https://heagandev.github.io/threejs-agent-starter/block-breaker/)
+
 
 ---
 
