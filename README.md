@@ -6,7 +6,7 @@ Clone it. Describe your game. Start building.
 
 No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
-![Three.js Game Dev Starter Pack](public/new-game.png)
+![Three.js Game Dev Starter Pack](public/cube-runner.png)
 
 > 🎬 *Cube Runner · Asteroids · Block Breaker — all built from this kit in a single agent session each.*
 
