@@ -1,14 +1,12 @@
-# Three.js Game Dev Starter Pack
+# Three.js Game Dev Starter Pack — Asteroids 3D
 
-**Go from zero to a playable browser game — with any AI agent, in a single session.**
+**A fully playable Asteroids clone — built from the starter kit using the `/plan` prompt and a single agent session.**
 
-Clone it. Describe your game. Start building.
+Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
-No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
+![Asteroids 3D gameplay](public/asteroids.png)
+[**▶ Play Asteroids 3D**](https://heagandev.github.io/threejs-agent-starter/asteroids/)
 
-![Three.js Game Dev Starter Pack](public/asteroids.png)
-
-> 🎬 *Cube Runner · Asteroids · Block Breaker — all built from this kit in a single agent session each.*
 
 ---
 
@@ -22,10 +20,11 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 
 | | |
 |---|---|
-| ⚙️ | **Vite + TypeScript + Three.js** — zero config, runs instantly |
+| 🎮 | **Asteroids 3D** — ship, bullets, asteroid splitting, waves, lives, score |
 | 🧠 | **11 Three.js skill files** your agent loads automatically — no explaining Three.js every session |
+| 📋 | **Prompt files** to extend the game feature by feature |
 | 📐 | **`AGENTS.md`** — architecture rules that keep your agent on track |
-| 🌿 | **Clean `src/main.ts`** — your game starts here, not someone else's |
+| 🌿 | **`new-game` branch** — blank canvas + `/plan` prompt to design your own game from scratch |
 
 ---
 
@@ -34,49 +33,56 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 ```bash
 git clone https://github.com/heagandev/threejs-agent-starter
 cd threejs-agent-starter
-git checkout new-game
+git checkout asteroids
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) — you'll see a blank canvas. Your game starts here.
+Open [http://localhost:5173](http://localhost:5173) — the game runs immediately.
+
+Controls: `A`/`D` rotate · `W` thrust · `S` brake · `Space` fire
 
 ---
 
-## Building Your Prototype
+## How This Was Built
+
+This branch was built from [`new-game`](../../tree/new-game) using the `/plan` prompt and a single agent session. That's the whole workflow — and it's exactly what you can do:
+
+```bash
+git checkout new-game
+git checkout -b my-game
+# Open your agent, paste prompts/plan.md, describe your game
+# One session later — a playable game exists
+```
+
+One branch per game. One agent session per feature.
+
+---
+
+## Building With Your Agent
 
 This kit works with any AI coding agent — Claude Code, Codex, Cursor, Windsurf, Copilot, or any tool that reads files from your repo.
+
+Paste any prompt file into your agent to add a feature:
+
+| Prompt | What it builds |
+|---|---|
+| `/plan` | Plan a new game from scratch |
+| `/power-ups` | Add a power-up system |
+| `/game-juice` | Screen shake, squash/stretch, score milestones |
 
 **Recommended workflow:**
 
 ```bash
-# 1. Create a branch for your game
-git checkout -b my-game
+# Start a new feature on its own branch
+git checkout -b feat/power-ups
 
-# 2. Open your agent and describe what you want to build
-# The agent reads AGENTS.md automatically and follows the architecture rules
-
-# 3. Iterate — review output, run it, commit when it works
-git add -A && git commit -m "feat: initial game prototype"
+# Paste prompts/power-ups.md into your agent
+# Review the output, run it, commit when it works
+git add -A && git commit -m "feat: add power-up system"
 ```
 
-**Three questions to get started — that's all your agent needs:**
-
-- What kind of game? (top-down shooter, platformer, puzzle, arcade...)
-- What is the player doing every second?
-- What ends the game?
-
-The kit handles the rest — renderer setup, game loop, resize handling, delta capping, clean class structure.
-
----
-
-## Want to see the workflow before you build?
-
-Check out the example branches — each was built from this `new-game` branch using the `/plan` prompt and a single agent session:
-
-- [`cube-runner`](../../tree/cube-runner) — dodge game, ready to extend with prompt files
-- [`asteroids`](../../tree/asteroids) — ship, bullets, asteroid splitting, waves
-- [`block-breaker`](../../tree/block-breaker) — paddle, multi-ball, levels
+Your agent reads `AGENTS.md` automatically and follows the architecture rules — no extra setup needed.
 
 ---
 
@@ -97,21 +103,6 @@ The `skills/` folder contains Three.js reference sheets. Your agent loads them a
 | `threejs-postprocessing.md` | Bloom, effects |
 | `threejs-loaders.md` | GLTF, asset loading |
 | `threejs-game.md` | Game loop, input, collision, HUD, audio, game-feel patterns |
-
----
-
-## What to Build
-
-Some directions worth exploring once your core loop is working:
-
-- **Mobile controls** — touch/swipe input for mobile players
-- **Game juice** — screen shake, hit flash, score milestones
-- **Procedural generation** — infinite levels from a seed
-- **Spatial audio** — sound design with the Web Audio API
-- **Custom shaders** — visual effects via `skills/threejs-shaders.md`
-- **Leaderboard** — score submission with a simple backend
-
-Each one makes a great focused agent session. Open a branch, describe the feature, review and commit.
 
 ---
 
