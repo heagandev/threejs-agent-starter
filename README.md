@@ -5,6 +5,8 @@
 You get a working dodge game out of the box. Then paste a prompt and your agent builds the next feature. No setup. No fighting your AI to stay on track — the architecture rules and skill files are already wired in.
 
 ![Cube Runner gameplay](public/cube-runner.png)
+[**▶ Play Cube Runner**](https://heagandev.github.io/threejs-agent-starter/cube-runner/)
+
 
 ---
 
