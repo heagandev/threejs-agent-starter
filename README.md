@@ -5,6 +5,8 @@
 Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
 ![Asteroids 3D gameplay](public/asteroids.png)
+[**▶ Play Asteroids 3D**](https://heagandev.github.io/threejs-agent-starter/asteroids/)
+
 
 ---
 
