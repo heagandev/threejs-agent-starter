@@ -4,7 +4,7 @@
 
 You get a working dodge game out of the box. Then paste a prompt and your agent builds the next feature. No setup. No fighting your AI to stay on track — the architecture rules and skill files are already wired in.
 
-![Cube Runner gameplay](public/cube-runner.png)
+<video src="public/cube-runner.mp4" autoplay loop muted playsinline width="100%"></video>
 
 ---
 
