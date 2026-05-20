@@ -4,7 +4,7 @@
 
 Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
-![Block Breaker gameplay](public/block-breaker.png)
+<video src="public/block-breaker.mp4" autoplay loop muted playsinline width="100%"></video>
 
 ---
 
