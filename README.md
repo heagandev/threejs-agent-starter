@@ -4,7 +4,7 @@
 
 Clone it, run it, and extend it with your agent. Or use it as a reference for building your own game from scratch.
 
-<video src="https://github.com/heagandev/threejs-agent-starter/raw/asteroids/public/asteroids.mp4" autoplay loop muted playsinline width="100%"></video>
+![Asteroids 3D gameplay](public/asteroids.png)
 
 ---
 
