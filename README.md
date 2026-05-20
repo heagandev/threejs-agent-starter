@@ -6,7 +6,7 @@ Clone it. Describe your game. Start building.
 
 No blank canvas paralysis. No setup friction. No fighting your agent to stay on track — the architecture rules and skill files are already wired in.
 
-<video src="https://github.com/heagandev/threejs-agent-starter/raw/new-game/public/thumbnail.mp4" autoplay loop muted playsinline width="100%"></video>
+![Demo — Cube Runner · Asteroids · Block Breaker built from this kit](public/thumbnail.gif)
 
 > 🎬 *Cube Runner · Asteroids · Block Breaker — all built from this kit in a single agent session each.*
 
@@ -74,9 +74,11 @@ The kit handles the rest — renderer setup, game loop, resize handling, delta c
 
 Check out the example branches — each was built from this `new-game` branch using the `/plan` prompt and a single agent session:
 
-- [`cube-runner`](../../tree/cube-runner) — dodge game, ready to extend with prompt files
-- [`asteroids`](../../tree/asteroids) — ship, bullets, asteroid splitting, waves
-- [`block-breaker`](../../tree/block-breaker) — paddle, multi-ball, levels
+| Branch | Preview |
+|---|---|
+| [`cube-runner`](../../tree/cube-runner) — dodge game, ready to extend with prompt files | ![cube-runner](public/cube-runner.gif) |
+| [`asteroids`](../../tree/asteroids) — ship, bullets, asteroid splitting, waves | ![asteroids](public/asteroids.gif) |
+| [`block-breaker`](../../tree/block-breaker) — paddle, multi-ball, levels | ![block-breaker](public/block-breaker.gif) |
 
 ---
 
