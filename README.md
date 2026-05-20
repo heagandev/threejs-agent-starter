@@ -12,9 +12,9 @@ No blank canvas paralysis. No setup friction. No fighting your agent to stay on 
 
 ---
 
-> 🚀 **Want the production-ready upgrade?**
-> The **Pro Kit** gives you a full React Three Fiber architecture, real project structure, case study branches, and a deployable Vercel URL — locked at launch pricing right now.
-> [→ Upgrade to the Pro Kit](https://heagandev.gumroad.com/l/hdev-starter)
+> 🚀 **Pro Kit — coming soon**
+> React Three Fiber architecture, real project structure, case study branches, and a Vercel-ready deploy. Subscribe on Gumroad to get notified when it drops + lock in launch pricing.
+> [→ Subscribe for early access](https://heagandev.gumroad.com)
 
 ---
 
