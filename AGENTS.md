@@ -47,22 +47,22 @@ Read this file fully before writing any code.
 
 ## Skills
 
-The `skills/` folder contains reference sheets for Three.js topics. Load the relevant skill before working on that area:
+The `.agents/skills/` folder contains reference sheets for Three.js topics. Load the relevant skill before working on that area:
 
-- `threejs-fundamentals.md` — scene, camera, renderer, transforms
-- `threejs-lighting.md` — lights, shadows
-- `threejs-geometry.md` — shapes, BufferGeometry
-- `threejs-interaction.md` — input, raycasting
-- `threejs-animation.md` — keyframes, procedural motion, spring physics
-- `threejs-materials.md` — materials, PBR
-- `threejs-textures.md` — texture loading, mapping
-- `threejs-shaders.md` — GLSL, ShaderMaterial
-- `threejs-postprocessing.md` — bloom, effects
-- `threejs-loaders.md` — GLTF, asset loading
-- `threejs-game.md` — game loop, input, collision, HUD, audio, game-feel patterns
+- `.agents/skills/threejs-fundamentals.md` — scene, camera, renderer, transforms
+- `.agents/skills/threejs-lighting.md` — lights, shadows
+- `.agents/skills/threejs-geometry.md` — shapes, BufferGeometry
+- `.agents/skills/threejs-interaction.md` — input, raycasting
+- `.agents/skills/threejs-animation.md` — keyframes, procedural motion, spring physics
+- `.agents/skills/threejs-materials.md` — materials, PBR
+- `.agents/skills/threejs-textures.md` — texture loading, mapping
+- `.agents/skills/threejs-shaders.md` — GLSL, ShaderMaterial
+- `.agents/skills/threejs-postprocessing.md` — bloom, effects
+- `.agents/skills/threejs-loaders.md` — GLTF, asset loading
+- `.agents/skills/threejs-game.md` — game loop, input, collision, HUD, audio, game-feel patterns
 
 ---
 
 ## Prompts
 
-The `prompts/` folder contains task prompts. When a user references a prompt (e.g. `/plan`, `/power-ups`), read the corresponding file and follow its instructions.
+The `.agents/prompts/` folder contains task prompts. When a user references a prompt (e.g. `/plan`, `/power-ups`), read the corresponding file and follow its instructions.
