@@ -21,7 +21,7 @@ Read this file fully before writing any code.
 3. **Game phases** — use a const-object pattern (not TS `enum` — `erasableSyntaxOnly` forbids it): `const GamePhase = { MENU: 'MENU', PLAYING: 'PLAYING', GAME_OVER: 'GAME_OVER' } as const`. State is always one of these. Every behaviour must respect the current phase.
 4. **Typed interfaces** — define TypeScript interfaces for all non-trivial objects (e.g. `Enemy`, `Projectile`, `Pickup`).
 5. **Cleanup** — any new event listeners, animation frames, or Three.js objects added must be disposed/removed in `destroy()`.
-6. **No new files** — unless explicitly asked, keep all code in `src/main.ts` and `src/style.css`.
+6. **File discipline** — keep all code in `src/main.ts` and `src/style.css` unless the game is complex enough to warrant additional files. If you create new files, declare the full file plan (name, purpose, exported interface) before writing any code.
 
 ---
 
@@ -60,6 +60,16 @@ The `.agents/skills/` folder contains reference sheets for Three.js topics. Load
 - `.agents/skills/threejs-postprocessing.md` — bloom, effects
 - `.agents/skills/threejs-loaders.md` — GLTF, asset loading
 - `.agents/skills/threejs-game.md` — game loop, input, collision, HUD, audio, game-feel patterns
+
+---
+
+## Build Order
+
+When building a new game from scratch:
+
+1. Write `src/main.ts` first — TypeScript is the critical path. Get it compiling before touching anything else.
+2. Run `tsc --noEmit` between major sections (scene, game objects, HUD, game phases) to catch errors early.
+3. Write `src/style.css` last — it's fast and has no blockers.
 
 ---
 
