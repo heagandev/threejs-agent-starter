@@ -30,12 +30,15 @@ interface PlayerShip {
   rotation: number
   invincible: boolean
   invincibleTimer: number
+  thrusterLight: THREE.PointLight
+  thrusterMesh: THREE.Mesh
 }
 
 interface Bullet {
   mesh: THREE.Mesh
   velocity: THREE.Vector3
   lifetime: number
+  light: THREE.PointLight
 }
 
 interface Asteroid {
@@ -48,7 +51,7 @@ interface Asteroid {
 
 class AsteroidsGame {
   private readonly scene: THREE.Scene
-  private readonly camera: THREE.PerspectiveCamera
+  private readonly camera: THREE.OrthographicCamera
   private readonly renderer: THREE.WebGLRenderer
   private readonly clock: THREE.Clock
 
@@ -82,22 +85,25 @@ class AsteroidsGame {
   private readonly boundOnResize: () => void
 
   constructor() {
-    // Scene
+    // Scene — no background so CSS nebula gradient shows through
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(0x000000)
 
-    // Camera
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+    // Camera — orthographic top-down for crisp 1:1 movement
+    const aspect = window.innerWidth / window.innerHeight
+    const half = GAME_CONFIG.WORLD_HALF_SIZE
+    const viewHalfH = half
+    const viewHalfW = half * aspect
+    this.camera = new THREE.OrthographicCamera(
+      -viewHalfW, viewHalfW,
+       viewHalfH, -viewHalfH,
+       0.1, 100
     )
-    this.camera.position.set(0, 28, 6)
+    this.camera.position.set(0, 30, 0)
     this.camera.lookAt(0, 0, 0)
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true })
+    this.renderer.setClearColor(0x000000, 0)
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = true
@@ -128,7 +134,7 @@ class AsteroidsGame {
         <span id="lives">❤️❤️❤️</span>
       </div>
       <div id="menu-overlay" class="screen-overlay">
-        <h1>ASTEROIDS 3D</h1>
+        <h1>HYPERSPACE ASTEROIDS</h1>
         <p>PRESS ENTER TO PLAY</p>
         <button class="start-btn" id="start-btn">TAP TO PLAY</button>
       </div>
@@ -193,33 +199,73 @@ class AsteroidsGame {
 
   private createStarfield(): void {
     const starGeo = new THREE.BufferGeometry()
-    const starCount = 300
+    const starCount = 800
     const positions = new Float32Array(starCount * 3)
+    const colors = new Float32Array(starCount * 3)
+
+    const palette = [
+      new THREE.Color(0xffffff),
+      new THREE.Color(0xbfd6ff),  // cool blue-white
+      new THREE.Color(0xffe5b4),  // warm pale
+      new THREE.Color(0xd6b3ff),  // soft violet
+    ]
 
     for (let i = 0; i < starCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 60
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 5
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 60
+      positions[i * 3]     = (Math.random() - 0.5) * 80
+      positions[i * 3 + 1] = -2 - Math.random() * 3     // below play plane
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 80
+      const c = palette[Math.floor(Math.random() * palette.length)]
+      colors[i * 3]     = c.r
+      colors[i * 3 + 1] = c.g
+      colors[i * 3 + 2] = c.b
     }
 
     starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.08 })
+    starGeo.setAttribute('color',    new THREE.BufferAttribute(colors, 3))
+    const starMat = new THREE.PointsMaterial({
+      size: 0.09,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9,
+    })
     const stars = new THREE.Points(starGeo, starMat)
     this.scene.add(stars)
   }
 
   private createShip(): PlayerShip {
-    const geo = new THREE.IcosahedronGeometry(0.6, 0)
+    // Cone — tip points along +Z by default after rotation. We rotate the
+    // geometry so the tip faces +Z (forward in our world), then the ship's
+    // `rotation` (yaw) rotates the mesh around Y to aim it.
+    const geo = new THREE.ConeGeometry(0.55, 1.4, 16)
+    geo.rotateX(Math.PI / 2)         // tip from +Y → +Z
     const mat = new THREE.MeshStandardMaterial({
-      color: 0x00aaff,
-      emissive: new THREE.Color(0x00aaff),
-      roughness: 0.3,
+      color: 0x00eaff,
+      emissive: new THREE.Color(0x0088aa),
+      emissiveIntensity: 0.9,
+      roughness: 0.25,
+      metalness: 0.4,
     })
     const mesh = new THREE.Mesh(geo, mat)
-    mesh.scale.y = 0.3
     mesh.castShadow = true
     mesh.receiveShadow = true
     this.scene.add(mesh)
+
+    // Thruster glow — small flat disc behind the ship, hidden until thrusting
+    const thrusterGeo = new THREE.ConeGeometry(0.35, 0.9, 12)
+    thrusterGeo.rotateX(-Math.PI / 2)  // tip from +Y → -Z (trailing behind)
+    const thrusterMat = new THREE.MeshBasicMaterial({
+      color: 0xffaa33,
+      transparent: true,
+      opacity: 0.0,
+    })
+    const thrusterMesh = new THREE.Mesh(thrusterGeo, thrusterMat)
+    thrusterMesh.position.z = -0.8
+    mesh.add(thrusterMesh)
+
+    // Point light that flickers on while thrusting
+    const thrusterLight = new THREE.PointLight(0xff8833, 0.0, 6)
+    thrusterLight.position.z = -1.0
+    mesh.add(thrusterLight)
 
     return {
       mesh,
@@ -227,6 +273,8 @@ class AsteroidsGame {
       rotation: 0,
       invincible: false,
       invincibleTimer: 0,
+      thrusterLight,
+      thrusterMesh,
     }
   }
 
@@ -237,9 +285,12 @@ class AsteroidsGame {
     const radius = size === 'large' ? 2.4 : size === 'medium' ? 1.4 : 0.7
     const geo = new THREE.DodecahedronGeometry(radius, 0)
     const mat = new THREE.MeshStandardMaterial({
-      color: 0x888888,
-      roughness: 0.9,
-      metalness: 0.1,
+      color: 0x9a8878,
+      emissive: new THREE.Color(0x221a14),
+      emissiveIntensity: 0.6,
+      roughness: 0.95,
+      metalness: 0.15,
+      flatShading: true,
     })
     const mesh = new THREE.Mesh(geo, mat)
     mesh.castShadow = true
@@ -366,11 +417,11 @@ class AsteroidsGame {
       this.scene.remove(oldest.mesh)
     }
 
-    const geo = new THREE.SphereGeometry(0.12, 6, 6)
+    const geo = new THREE.SphereGeometry(0.15, 8, 8)
     const mat = new THREE.MeshStandardMaterial({
-      color: 0xffff00,
-      emissive: new THREE.Color(0xffff00),
-      emissiveIntensity: 2,
+      color: 0xffff66,
+      emissive: new THREE.Color(0xffff44),
+      emissiveIntensity: 3,
     })
     const mesh = new THREE.Mesh(geo, mat)
     mesh.position.copy(this.ship.mesh.position)
@@ -381,12 +432,16 @@ class AsteroidsGame {
       Math.cos(this.ship.rotation)
     )
 
-    mesh.position.add(facing.clone().multiplyScalar(0.8))
+    mesh.position.add(facing.clone().multiplyScalar(0.9))
     this.scene.add(mesh)
+
+    // Bullet carries its own light so it illuminates nearby asteroids
+    const light = new THREE.PointLight(0xffee66, 1.5, 5)
+    mesh.add(light)
 
     const velocity = facing.multiplyScalar(GAME_CONFIG.BULLET_SPEED)
 
-    this.bullets.push({ mesh, velocity, lifetime: GAME_CONFIG.BULLET_LIFETIME })
+    this.bullets.push({ mesh, velocity, lifetime: GAME_CONFIG.BULLET_LIFETIME, light })
   }
 
   private wrapPosition(pos: THREE.Vector3): void {
@@ -435,8 +490,19 @@ class AsteroidsGame {
     // Screen wrap
     this.wrapPosition(ship.mesh.position)
 
-    // Mesh rotation
-    ship.mesh.rotation.y = -ship.rotation
+    // Mesh rotation — cone tip points in (sin θ, 0, cos θ) to match firing dir
+    ship.mesh.rotation.y = ship.rotation
+
+    // Thruster visual + light pulse
+    const thrusting = this.keys.has('KeyW') || this.keys.has('ArrowUp')
+    if (thrusting) {
+      const flicker = 0.7 + Math.random() * 0.3
+      ;(ship.thrusterMesh.material as THREE.MeshBasicMaterial).opacity = flicker
+      ship.thrusterLight.intensity = 2.0 * flicker
+    } else {
+      ;(ship.thrusterMesh.material as THREE.MeshBasicMaterial).opacity = 0
+      ship.thrusterLight.intensity = 0
+    }
 
     // Invincibility
     if (ship.invincible) {
@@ -623,7 +689,14 @@ class AsteroidsGame {
   }
 
   private onResize(): void {
-    this.camera.aspect = window.innerWidth / window.innerHeight
+    const aspect = window.innerWidth / window.innerHeight
+    const half = GAME_CONFIG.WORLD_HALF_SIZE
+    const viewHalfH = half
+    const viewHalfW = half * aspect
+    this.camera.left   = -viewHalfW
+    this.camera.right  =  viewHalfW
+    this.camera.top    =  viewHalfH
+    this.camera.bottom = -viewHalfH
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
