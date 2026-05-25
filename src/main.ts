@@ -168,7 +168,7 @@ class AsteroidsGame {
         <span id="lives">❤️❤️❤️</span>
       </div>
       <div id="menu-overlay" class="screen-overlay">
-        <h1>HYPERSPACE ASTEROIDS</h1>
+        <h1>ASTEROIDS</h1>
         <p>PRESS ENTER TO PLAY</p>
         <button class="start-btn" id="start-btn">TAP TO PLAY</button>
       </div>
