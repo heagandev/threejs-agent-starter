@@ -8,13 +8,20 @@ body, html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: black;
+  background:
+    radial-gradient(ellipse at 25% 30%, rgba(80, 30, 140, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 75%, rgba(20, 60, 160, 0.40) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, rgba(120, 40, 90, 0.20) 0%, transparent 70%),
+    #03020a;
 }
 
 #app {
   position: relative;
   width: 100vw;
   height: 100vh;
+  /* Use dynamic viewport height on browsers that support it — accounts for
+     mobile browser chrome (address bar, tab strip) appearing/disappearing. */
+  height: 100dvh;
 }
 
 canvas {
@@ -51,16 +58,21 @@ canvas {
   text-align: center;
   z-index: 20;
   background: rgba(0, 0, 0, 0.7);
+  padding: 1.5rem;
 }
 
 .screen-overlay h1 {
-  font-size: 3rem;
-  letter-spacing: 0.3em;
+  /* Scales with viewport but never gets so big it clips on narrow phones */
+  font-size: clamp(1.6rem, 8vw, 3rem);
+  letter-spacing: 0.2em;
   margin-bottom: 1rem;
+  line-height: 1.15;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .screen-overlay p {
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 3.5vw, 1rem);
   opacity: 0.7;
 }
 
@@ -94,15 +106,17 @@ canvas {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 200px;
+  height: 220px;
   z-index: 15;
   pointer-events: none;
+  /* Respect notches and home-bar safe areas */
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .ctrl-btn {
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,18 +135,19 @@ canvas {
   background: rgba(255,255,255,0.22);
 }
 
-/* D-pad positions (bottom-left cluster) */
-#ctrl-thrust { bottom: 120px; left:  72px; }
-#ctrl-left   { bottom:  52px; left:   4px; }
-#ctrl-brake  { bottom:  52px; left:  72px; }
-#ctrl-right  { bottom:  52px; left: 140px; }
+/* D-pad positions (bottom-left cluster) — bumped up and inward so nothing
+   sits under the browser bottom bar or off-screen on narrow phones */
+#ctrl-thrust { bottom: 88px;  left:  76px; }
+#ctrl-left   { bottom:  20px; left:   8px; }
+#ctrl-brake  { bottom:  20px; left:  76px; }
+#ctrl-right  { bottom:  20px; left: 144px; }
 
 /* Fire button (bottom-right) */
 #ctrl-fire {
-  bottom: 52px;
-  right: 16px;
-  width: 80px;
-  height: 80px;
+  bottom: 20px;
+  right: 12px;
+  width: 76px;
+  height: 76px;
   font-size: 0.85rem;
   font-weight: bold;
   letter-spacing: 0.05em;
@@ -145,9 +160,43 @@ canvas {
   background: rgba(255,255,0,0.25);
 }
 
+/* Very short viewports — shrink controls so they don't dominate */
+@media (max-height: 640px) {
+  .ctrl-btn { width: 52px; height: 52px; font-size: 1.2rem; }
+  #ctrl-thrust { bottom: 76px; left: 66px; }
+  #ctrl-left   { bottom: 16px; left:  6px; }
+  #ctrl-brake  { bottom: 16px; left: 66px; }
+  #ctrl-right  { bottom: 16px; left: 126px; }
+  #ctrl-fire   { bottom: 16px; right: 10px; width: 64px; height: 64px; }
+}
+
 /* Hide D-pad on desktop (mouse/trackpad) */
 @media (hover: hover) and (pointer: fine) {
   #mobile-controls {
     display: none;
   }
+}
+
+/* ── Score milestone pulse ── */
+@keyframes score-pulse {
+  0%   { transform: scale(1);    color: #ffffff; }
+  30%  { transform: scale(1.45); color: #ffe600; }
+  65%  { transform: scale(1.2);  color: #ffaa00; }
+  100% { transform: scale(1);    color: #ffffff; }
+}
+
+.score-pulse {
+  display: inline-block;
+  animation: score-pulse 0.6s ease-out forwards;
+}
+
+/* ── Wave banner entrance ── */
+@keyframes wave-in {
+  0%   { opacity: 0; letter-spacing: 0.6em; transform: scale(0.75); }
+  45%  { opacity: 1; letter-spacing: 0.18em; transform: scale(1.06); }
+  100% { opacity: 1; letter-spacing: 0.1em;  transform: scale(1);    }
+}
+
+.wave-in {
+  animation: wave-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

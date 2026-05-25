@@ -15,6 +15,18 @@ const GAME_CONFIG = {
   ASTEROID_SPEED_SMALL: 4.0,
   INVINCIBILITY_DURATION: 2.0,
   WORLD_HALF_SIZE: 15,
+  // Screen shake
+  SHAKE_HIT_DURATION: 0.25,
+  SHAKE_HIT_INTENSITY: 0.5,
+  SHAKE_GAMEOVER_DURATION: 0.55,
+  SHAKE_GAMEOVER_INTENSITY: 1.2,
+  // Explosion particles
+  PARTICLE_LIFETIME_LARGE: 0.8,
+  PARTICLE_LIFETIME_MEDIUM: 0.6,
+  PARTICLE_LIFETIME_SMALL: 0.45,
+  // Near-miss flash
+  NEAR_MISS_DISTANCE: 2.8,
+  NEAR_MISS_FLASH_DURATION: 0.35,
 }
 
 const GamePhase = {
@@ -30,12 +42,15 @@ interface PlayerShip {
   rotation: number
   invincible: boolean
   invincibleTimer: number
+  thrusterLight: THREE.PointLight
+  thrusterMesh: THREE.Mesh
 }
 
 interface Bullet {
   mesh: THREE.Mesh
   velocity: THREE.Vector3
   lifetime: number
+  light: THREE.PointLight
 }
 
 interface Asteroid {
@@ -46,9 +61,16 @@ interface Asteroid {
   size: 'large' | 'medium' | 'small'
 }
 
+interface Particle {
+  mesh: THREE.Mesh
+  velocity: THREE.Vector3
+  lifetime: number
+  maxLifetime: number
+}
+
 class AsteroidsGame {
   private readonly scene: THREE.Scene
-  private readonly camera: THREE.PerspectiveCamera
+  private readonly camera: THREE.OrthographicCamera
   private readonly renderer: THREE.WebGLRenderer
   private readonly clock: THREE.Clock
 
@@ -67,6 +89,21 @@ class AsteroidsGame {
 
   private animFrameId: number = 0
 
+  // Audio
+  private audioCtx: AudioContext | null = null
+
+  // Screen shake
+  private shakeTimer: number = 0
+  private shakeDuration: number = 0
+  private shakeIntensity: number = 0
+
+  // Particles
+  private particles: Particle[] = []
+
+  // HUD state
+  private lastScoreMilestone: number = 0
+  private readonly nearMissTimers: Map<Asteroid, number> = new Map()
+
   private readonly menuOverlay: HTMLElement
   private readonly gameOverOverlay: HTMLElement
   private readonly scoreEl: HTMLElement
@@ -82,22 +119,25 @@ class AsteroidsGame {
   private readonly boundOnResize: () => void
 
   constructor() {
-    // Scene
+    // Scene — no background so CSS nebula gradient shows through
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(0x000000)
 
-    // Camera
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+    // Camera — orthographic top-down for crisp 1:1 movement
+    const aspect = window.innerWidth / window.innerHeight
+    const half = GAME_CONFIG.WORLD_HALF_SIZE
+    const viewHalfH = half
+    const viewHalfW = half * aspect
+    this.camera = new THREE.OrthographicCamera(
+      -viewHalfW, viewHalfW,
+       viewHalfH, -viewHalfH,
+       0.1, 100
     )
-    this.camera.position.set(0, 28, 6)
+    this.camera.position.set(0, 30, 0)
     this.camera.lookAt(0, 0, 0)
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true })
+    this.renderer.setClearColor(0x000000, 0)
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = true
@@ -128,7 +168,7 @@ class AsteroidsGame {
         <span id="lives">❤️❤️❤️</span>
       </div>
       <div id="menu-overlay" class="screen-overlay">
-        <h1>ASTEROIDS 3D</h1>
+        <h1>ASTEROIDS</h1>
         <p>PRESS ENTER TO PLAY</p>
         <button class="start-btn" id="start-btn">TAP TO PLAY</button>
       </div>
@@ -193,33 +233,73 @@ class AsteroidsGame {
 
   private createStarfield(): void {
     const starGeo = new THREE.BufferGeometry()
-    const starCount = 300
+    const starCount = 800
     const positions = new Float32Array(starCount * 3)
+    const colors = new Float32Array(starCount * 3)
+
+    const palette = [
+      new THREE.Color(0xffffff),
+      new THREE.Color(0xbfd6ff),  // cool blue-white
+      new THREE.Color(0xffe5b4),  // warm pale
+      new THREE.Color(0xd6b3ff),  // soft violet
+    ]
 
     for (let i = 0; i < starCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 60
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 5
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 60
+      positions[i * 3]     = (Math.random() - 0.5) * 80
+      positions[i * 3 + 1] = -2 - Math.random() * 3     // below play plane
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 80
+      const c = palette[Math.floor(Math.random() * palette.length)]
+      colors[i * 3]     = c.r
+      colors[i * 3 + 1] = c.g
+      colors[i * 3 + 2] = c.b
     }
 
     starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.08 })
+    starGeo.setAttribute('color',    new THREE.BufferAttribute(colors, 3))
+    const starMat = new THREE.PointsMaterial({
+      size: 0.09,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9,
+    })
     const stars = new THREE.Points(starGeo, starMat)
     this.scene.add(stars)
   }
 
   private createShip(): PlayerShip {
-    const geo = new THREE.IcosahedronGeometry(0.6, 0)
+    // Cone — tip points along +Z by default after rotation. We rotate the
+    // geometry so the tip faces +Z (forward in our world), then the ship's
+    // `rotation` (yaw) rotates the mesh around Y to aim it.
+    const geo = new THREE.ConeGeometry(0.55, 1.4, 16)
+    geo.rotateX(Math.PI / 2)         // tip from +Y → +Z
     const mat = new THREE.MeshStandardMaterial({
-      color: 0x00aaff,
-      emissive: new THREE.Color(0x00aaff),
-      roughness: 0.3,
+      color: 0x00eaff,
+      emissive: new THREE.Color(0x0088aa),
+      emissiveIntensity: 0.9,
+      roughness: 0.25,
+      metalness: 0.4,
     })
     const mesh = new THREE.Mesh(geo, mat)
-    mesh.scale.y = 0.3
     mesh.castShadow = true
     mesh.receiveShadow = true
     this.scene.add(mesh)
+
+    // Thruster glow — small flat disc behind the ship, hidden until thrusting
+    const thrusterGeo = new THREE.ConeGeometry(0.35, 0.9, 12)
+    thrusterGeo.rotateX(-Math.PI / 2)  // tip from +Y → -Z (trailing behind)
+    const thrusterMat = new THREE.MeshBasicMaterial({
+      color: 0xffaa33,
+      transparent: true,
+      opacity: 0.0,
+    })
+    const thrusterMesh = new THREE.Mesh(thrusterGeo, thrusterMat)
+    thrusterMesh.position.z = -0.8
+    mesh.add(thrusterMesh)
+
+    // Point light that flickers on while thrusting
+    const thrusterLight = new THREE.PointLight(0xff8833, 0.0, 6)
+    thrusterLight.position.z = -1.0
+    mesh.add(thrusterLight)
 
     return {
       mesh,
@@ -227,6 +307,8 @@ class AsteroidsGame {
       rotation: 0,
       invincible: false,
       invincibleTimer: 0,
+      thrusterLight,
+      thrusterMesh,
     }
   }
 
@@ -237,9 +319,12 @@ class AsteroidsGame {
     const radius = size === 'large' ? 2.4 : size === 'medium' ? 1.4 : 0.7
     const geo = new THREE.DodecahedronGeometry(radius, 0)
     const mat = new THREE.MeshStandardMaterial({
-      color: 0x888888,
-      roughness: 0.9,
-      metalness: 0.1,
+      color: 0x9a8878,
+      emissive: new THREE.Color(0x221a14),
+      emissiveIntensity: 0.6,
+      roughness: 0.95,
+      metalness: 0.15,
+      flatShading: true,
     })
     const mesh = new THREE.Mesh(geo, mat)
     mesh.castShadow = true
@@ -299,6 +384,8 @@ class AsteroidsGame {
     this.wave = 1
     this.bullets = []
     this.asteroids = []
+    this.shakeTimer = 0
+    this.lastScoreMilestone = 0
 
     // Create ship
     this.ship = this.createShip()
@@ -318,10 +405,14 @@ class AsteroidsGame {
       this.asteroids.push(this.spawnAsteroid('large'))
     }
     this.showWaveText()
+    this.playWaveStart()
   }
 
   private showWaveText(): void {
     this.waveEl.textContent = `WAVE ${this.wave}`
+    this.waveEl.classList.remove('wave-in')
+    void this.waveEl.offsetWidth  // force reflow to restart animation
+    this.waveEl.classList.add('wave-in')
     this.waveTextTimer = 2.0
   }
 
@@ -349,6 +440,15 @@ class AsteroidsGame {
       this.scene.remove(asteroid.mesh)
     }
     this.asteroids = []
+
+    // Remove particles
+    for (const particle of this.particles) {
+      particle.mesh.geometry.dispose()
+      ;(particle.mesh.material as THREE.Material).dispose()
+      this.scene.remove(particle.mesh)
+    }
+    this.particles = []
+    this.nearMissTimers.clear()
   }
 
   private fireBullet(): void {
@@ -357,6 +457,7 @@ class AsteroidsGame {
     if (!this.ship) return
 
     this.lastFireTime = elapsed
+    this.playShoot()
 
     // If at max, remove oldest
     if (this.bullets.length >= GAME_CONFIG.MAX_BULLETS) {
@@ -366,11 +467,11 @@ class AsteroidsGame {
       this.scene.remove(oldest.mesh)
     }
 
-    const geo = new THREE.SphereGeometry(0.12, 6, 6)
+    const geo = new THREE.SphereGeometry(0.15, 8, 8)
     const mat = new THREE.MeshStandardMaterial({
-      color: 0xffff00,
-      emissive: new THREE.Color(0xffff00),
-      emissiveIntensity: 2,
+      color: 0xffff66,
+      emissive: new THREE.Color(0xffff44),
+      emissiveIntensity: 3,
     })
     const mesh = new THREE.Mesh(geo, mat)
     mesh.position.copy(this.ship.mesh.position)
@@ -381,12 +482,16 @@ class AsteroidsGame {
       Math.cos(this.ship.rotation)
     )
 
-    mesh.position.add(facing.clone().multiplyScalar(0.8))
+    mesh.position.add(facing.clone().multiplyScalar(0.9))
     this.scene.add(mesh)
+
+    // Bullet carries its own light so it illuminates nearby asteroids
+    const light = new THREE.PointLight(0xffee66, 1.5, 5)
+    mesh.add(light)
 
     const velocity = facing.multiplyScalar(GAME_CONFIG.BULLET_SPEED)
 
-    this.bullets.push({ mesh, velocity, lifetime: GAME_CONFIG.BULLET_LIFETIME })
+    this.bullets.push({ mesh, velocity, lifetime: GAME_CONFIG.BULLET_LIFETIME, light })
   }
 
   private wrapPosition(pos: THREE.Vector3): void {
@@ -435,8 +540,19 @@ class AsteroidsGame {
     // Screen wrap
     this.wrapPosition(ship.mesh.position)
 
-    // Mesh rotation
-    ship.mesh.rotation.y = -ship.rotation
+    // Mesh rotation — cone tip points in (sin θ, 0, cos θ) to match firing dir
+    ship.mesh.rotation.y = ship.rotation
+
+    // Thruster visual + light pulse
+    const thrusting = this.keys.has('KeyW') || this.keys.has('ArrowUp')
+    if (thrusting) {
+      const flicker = 0.7 + Math.random() * 0.3
+      ;(ship.thrusterMesh.material as THREE.MeshBasicMaterial).opacity = flicker
+      ship.thrusterLight.intensity = 2.0 * flicker
+    } else {
+      ;(ship.thrusterMesh.material as THREE.MeshBasicMaterial).opacity = 0
+      ship.thrusterLight.intensity = 0
+    }
 
     // Invincibility
     if (ship.invincible) {
@@ -517,7 +633,7 @@ class AsteroidsGame {
           bulletsToRemove.push(bullet)
           asteroidsToRemove.push(asteroid)
 
-          // Score
+          // Score + sound + particles
           if (asteroid.size === 'large') {
             this.score += 20
             asteroidsToSpawn.push({ size: 'medium', pos: asteroid.mesh.position.clone() })
@@ -529,6 +645,8 @@ class AsteroidsGame {
           } else {
             this.score += 100
           }
+          this.playExplosion(asteroid.size)
+          this.spawnExplosionParticles(asteroid.mesh.position.clone(), asteroid.size)
 
           break
         }
@@ -546,6 +664,8 @@ class AsteroidsGame {
         if (shipBox.intersectsBox(asteroidBox)) {
           this.lives -= 1
           this.updateHUD()
+          this.playShipHit()
+          this.triggerShake(GAME_CONFIG.SHAKE_HIT_DURATION, GAME_CONFIG.SHAKE_HIT_INTENSITY)
 
           if (this.lives <= 0) {
             this.triggerGameOver()
@@ -575,6 +695,18 @@ class AsteroidsGame {
       this.asteroids.push(this.spawnAsteroid(spawn.size, spawn.pos))
     }
 
+    // Near-miss flash — asteroids close to an un-invincible ship
+    if (this.ship && !this.ship.invincible) {
+      const shipPos = this.ship.mesh.position
+      for (const asteroid of this.asteroids) {
+        if (this.nearMissTimers.has(asteroid)) continue
+        const dist = asteroid.mesh.position.distanceTo(shipPos)
+        if (dist < GAME_CONFIG.NEAR_MISS_DISTANCE) {
+          this.nearMissTimers.set(asteroid, GAME_CONFIG.NEAR_MISS_FLASH_DURATION)
+        }
+      }
+    }
+
     this.updateHUD()
   }
 
@@ -590,10 +722,20 @@ class AsteroidsGame {
     this.phase = GamePhase.GAME_OVER
     this.finalScoreEl.textContent = `SCORE: ${this.score}`
     this.gameOverOverlay.classList.remove('hidden')
+    this.playGameOver()
+    this.triggerShake(GAME_CONFIG.SHAKE_GAMEOVER_DURATION, GAME_CONFIG.SHAKE_GAMEOVER_INTENSITY)
   }
 
   private updateHUD(): void {
     this.scoreEl.textContent = `SCORE: ${this.score}`
+
+    // Score milestone flash every 100 pts
+    const milestone = Math.floor(this.score / 100)
+    if (milestone > this.lastScoreMilestone && this.score > 0) {
+      this.lastScoreMilestone = milestone
+      this.scoreEl.classList.add('score-pulse')
+      setTimeout(() => this.scoreEl.classList.remove('score-pulse'), 600)
+    }
 
     const fullHeart = '❤️'
     const emptyHeart = '♡'
@@ -623,7 +765,14 @@ class AsteroidsGame {
   }
 
   private onResize(): void {
-    this.camera.aspect = window.innerWidth / window.innerHeight
+    const aspect = window.innerWidth / window.innerHeight
+    const half = GAME_CONFIG.WORLD_HALF_SIZE
+    const viewHalfH = half
+    const viewHalfW = half * aspect
+    this.camera.left   = -viewHalfW
+    this.camera.right  =  viewHalfW
+    this.camera.top    =  viewHalfH
+    this.camera.bottom = -viewHalfH
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -641,6 +790,7 @@ class AsteroidsGame {
       this.updateAsteroids(delta)
       this.checkCollisions()
       this.checkWaveComplete()
+      this.updateNearMissFlash(delta)
 
       // Wave text fade
       if (this.waveTextTimer > 0) {
@@ -651,7 +801,186 @@ class AsteroidsGame {
       }
     }
 
+    this.updateShake(delta)
+    this.updateParticles(delta)
+
     this.renderer.render(this.scene, this.camera)
+  }
+
+  // ── Audio ─────────────────────────────────────────────────────────────────
+
+  private getAudio(): AudioContext {
+    if (!this.audioCtx) this.audioCtx = new AudioContext()
+    if (this.audioCtx.state === 'suspended') this.audioCtx.resume()
+    return this.audioCtx
+  }
+
+  private playShoot(): void {
+    const ctx = this.getAudio()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(620, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.08)
+    gain.gain.setValueAtTime(0.12, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
+    osc.start(); osc.stop(ctx.currentTime + 0.08)
+  }
+
+  private playExplosion(size: 'large' | 'medium' | 'small'): void {
+    const ctx = this.getAudio()
+    const configs = {
+      large:  { freq: 60,  dur: 0.65, vol: 0.45 },
+      medium: { freq: 110, dur: 0.35, vol: 0.3  },
+      small:  { freq: 220, dur: 0.2,  vol: 0.2  },
+    }
+    const { freq, dur, vol } = configs[size]
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(freq, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.25, ctx.currentTime + dur)
+    gain.gain.setValueAtTime(vol, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur)
+    osc.start(); osc.stop(ctx.currentTime + dur)
+  }
+
+  private playShipHit(): void {
+    const ctx = this.getAudio()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(160, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.45)
+    gain.gain.setValueAtTime(0.4, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45)
+    osc.start(); osc.stop(ctx.currentTime + 0.45)
+  }
+
+  private playGameOver(): void {
+    const ctx = this.getAudio()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(300, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 1.2)
+    gain.gain.setValueAtTime(0.5, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2)
+    osc.start(); osc.stop(ctx.currentTime + 1.2)
+  }
+
+  private playWaveStart(): void {
+    const ctx = this.getAudio()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(400, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.4)
+    gain.gain.setValueAtTime(0.22, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+    osc.start(); osc.stop(ctx.currentTime + 0.4)
+  }
+
+  // ── Screen shake ──────────────────────────────────────────────────────────
+
+  private triggerShake(duration: number, intensity: number): void {
+    this.shakeDuration = duration
+    this.shakeTimer = duration
+    this.shakeIntensity = intensity
+  }
+
+  private updateShake(delta: number): void {
+    if (this.shakeTimer <= 0) {
+      this.camera.position.x = 0
+      this.camera.position.z = 0
+      return
+    }
+    this.shakeTimer -= delta
+    const t = Math.max(0, this.shakeTimer / this.shakeDuration)
+    this.camera.position.x = (Math.random() - 0.5) * this.shakeIntensity * t
+    this.camera.position.z = (Math.random() - 0.5) * this.shakeIntensity * t
+  }
+
+  // ── Explosion particles ───────────────────────────────────────────────────
+
+  private spawnExplosionParticles(pos: THREE.Vector3, size: 'large' | 'medium' | 'small'): void {
+    const configs = {
+      large:  { count: 16, speed: 8,  color: 0xff5522, lifetime: GAME_CONFIG.PARTICLE_LIFETIME_LARGE  },
+      medium: { count: 12, speed: 6,  color: 0xdd7733, lifetime: GAME_CONFIG.PARTICLE_LIFETIME_MEDIUM },
+      small:  { count: 8,  speed: 4,  color: 0xccbbaa, lifetime: GAME_CONFIG.PARTICLE_LIFETIME_SMALL  },
+    }
+    const { count, speed, color, lifetime } = configs[size]
+
+    for (let i = 0; i < count; i++) {
+      const geo = new THREE.TetrahedronGeometry(0.12 + Math.random() * 0.18, 0)
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        emissive: new THREE.Color(color),
+        emissiveIntensity: 1.2,
+        transparent: true,
+      })
+      const mesh = new THREE.Mesh(geo, mat)
+      mesh.position.copy(pos)
+
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
+      const s = speed * (0.4 + Math.random() * 0.6)
+      const velocity = new THREE.Vector3(
+        Math.cos(angle) * s,
+        (Math.random() - 0.5) * 2,
+        Math.sin(angle) * s
+      )
+
+      this.scene.add(mesh)
+      this.particles.push({ mesh, velocity, lifetime, maxLifetime: lifetime })
+    }
+  }
+
+  private updateParticles(delta: number): void {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i]
+      p.lifetime -= delta
+
+      if (p.lifetime <= 0) {
+        p.mesh.geometry.dispose()
+        ;(p.mesh.material as THREE.Material).dispose()
+        this.scene.remove(p.mesh)
+        this.particles.splice(i, 1)
+        continue
+      }
+
+      p.mesh.position.addScaledVector(p.velocity, delta)
+      const t = p.lifetime / p.maxLifetime
+      ;(p.mesh.material as THREE.MeshStandardMaterial).opacity = t
+      p.mesh.scale.setScalar(t * 0.85 + 0.15)
+    }
+  }
+
+  // ── Near-miss flash ───────────────────────────────────────────────────────
+
+  private updateNearMissFlash(delta: number): void {
+    const toDelete: Asteroid[] = []
+    for (const [asteroid, timer] of this.nearMissTimers) {
+      if (!this.asteroids.includes(asteroid)) {
+        toDelete.push(asteroid)
+        continue
+      }
+      const newTimer = timer - delta
+      const mat = asteroid.mesh.material as THREE.MeshStandardMaterial
+      if (newTimer <= 0) {
+        mat.emissive.set(0x221a14)
+        toDelete.push(asteroid)
+      } else {
+        const t = newTimer / GAME_CONFIG.NEAR_MISS_FLASH_DURATION
+        mat.emissive.setRGB(0.7 * t, 0.1 * t, 0)
+        this.nearMissTimers.set(asteroid, newTimer)
+      }
+    }
+    for (const asteroid of toDelete) this.nearMissTimers.delete(asteroid)
   }
 
   destroy(): void {
