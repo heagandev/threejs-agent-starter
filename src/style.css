@@ -176,3 +176,27 @@ canvas {
     display: none;
   }
 }
+
+/* ── Score milestone pulse ── */
+@keyframes score-pulse {
+  0%   { transform: scale(1);    color: #ffffff; }
+  30%  { transform: scale(1.45); color: #ffe600; }
+  65%  { transform: scale(1.2);  color: #ffaa00; }
+  100% { transform: scale(1);    color: #ffffff; }
+}
+
+.score-pulse {
+  display: inline-block;
+  animation: score-pulse 0.6s ease-out forwards;
+}
+
+/* ── Wave banner entrance ── */
+@keyframes wave-in {
+  0%   { opacity: 0; letter-spacing: 0.6em; transform: scale(0.75); }
+  45%  { opacity: 1; letter-spacing: 0.18em; transform: scale(1.06); }
+  100% { opacity: 1; letter-spacing: 0.1em;  transform: scale(1);    }
+}
+
+.wave-in {
+  animation: wave-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
