@@ -1,57 +1,76 @@
 # /game-juice — Add Polish and Game Feel
 
-Read `AGENTS.md` fully before starting. Load `skills/threejs-animation.md` and `skills/threejs-postprocessing.md`.
+Read `AGENTS.md` fully before starting. Load `skills/threejs-animation.md` and `skills/threejs-game.md`.
 
 ---
 
 ## Context
 
-The base Cube Runner game is running with power-ups. Your job is to add juice — the small details that make a game feel alive and satisfying.
+The Asteroids 3D game is running on the `asteroids` branch with ship, bullets, asteroids, waves, lives, and score. The camera is orthographic top-down. All logic lives in `AsteroidsGame` in `src/main.ts`.
+
+Check which juice features are already implemented before adding new ones — some may already exist (screen shake, near-miss flash, score pulse, audio). Only add what is missing.
 
 ---
 
 ## Requirements
 
-Implement all of the following:
+Implement all of the following that are not already present:
 
 ### Screen Shake
 
-- On game over (obstacle hit or fall), shake the camera for ~0.4 seconds
-- Shake is random offset applied to camera position each frame, decaying over time
-- Do not shake on menu or respawn
+- On ship hit or rocket detonation, shake the camera for ~0.25–0.4 seconds
+- Shake is a random offset applied to camera position each frame, decaying over time via lerp
+- Do **not** shake on menu/game-over screens
 
-### Player Squash & Stretch
+### Near-Miss Flash
 
-- When the player lands on the ground (velocity.y goes from negative to 0), briefly squash on Y and stretch on X/Z
-- Use a spring or lerp to return to `scale(1, 1, 1)` within ~0.2 seconds
+- If the ship passes within `NEAR_MISS_DISTANCE` (config) of an asteroid without colliding, briefly flash the asteroid's emissive color to red then back
+- Track per-asteroid flash timers — do not use a single global timer
 
-### Obstacle Flash on Near Miss
+### Score Milestone Pulse
 
-- If the player passes within 1.5 units of an obstacle without colliding, briefly flash the obstacle's emissive color to red and back
+- Every 1000 points, add a CSS animation class to the score element (scale up + color pulse to gold)
+- Remove the class after animation completes, re-add on next milestone
+- Track last milestone to avoid repeat triggers
 
-### Speed Lines (HUD)
+### Wave Banner Entrance
 
-- At `forwardSpeed` above 18, show a subtle CSS vignette or radial gradient overlay in the HUD that intensifies with speed
-- Implemented in CSS, toggled via a class on `#game-root`
+- When a new wave starts, show `WAVE N` in the HUD center with a CSS entrance animation (scale + letter-spacing sweep)
+- Text fades out after ~2s
+- Class-based animation: add `.wave-in`, remove after transition
 
-### Score Milestone
+### Thruster VFX
 
-- Every 100 points, flash the score display (brief scale up + color pulse) using a CSS animation class
-- Add and remove the class programmatically from the score element
+- When thrust key is held, show a small cone or particle puff behind the ship
+- Cone: `ConeGeometry`, orange/yellow emissive, scaled by thrust amount, attached to ship mesh
+- Alternatively: spawn small particle puffs each frame when thrusting
 
-### Sound (optional — skip if no Web Audio context)
+### Explosion Particles
 
-- If the developer wants audio, use the Web Audio API only (no libraries)
-- Implement: jump whoosh, collect power-up chime, game over thud
-- Gate behind a user-gesture unlock
+- On asteroid destruction, spawn 8–16 debris particles in random directions
+- Particles: small `TetrahedronGeometry`, grey/orange tint, fade out over ~0.6s
+- Use the existing `Particle` interface pattern
+
+### Sound Effects (Web Audio, no libraries)
+
+- Gate all audio behind a user-gesture unlock (click/tap/keypress)
+- Implement: bullet fire beep, explosion boom (3 sizes), ship hit crunch, wave-start chime
+- Use `OscillatorNode` + `GainNode` from `AudioContext` — no files, no libraries
+
+### Mobile Controls
+
+- D-pad: left/right (rotate), up/down (thrust/brake) — 4 buttons bottom-left
+- FIRE button: bottom-right, large circular tap target
+- Touch events: `touchstart` adds key to `Set`, `touchend` removes it; `touchstart` on FIRE also calls `fireBullet()` directly
+- Hide on desktop via `@media (hover: hover) and (pointer: fine)`
 
 ---
 
 ## Architecture Rules
 
-- All shake/squash state must be class fields, not module-level variables
-- Juice effects must not interfere with gameplay logic — keep them in separate update methods called after physics
-- All effects must reset cleanly on `resetToMenu()`
+- All new state (shake timer, flash timers, milestone tracker) must be class fields
+- Juice effects must not modify gameplay logic — keep them in separate `update*` methods called after physics
+- All effects must reset cleanly when game restarts
 
 ---
 
@@ -59,4 +78,4 @@ Implement all of the following:
 
 Updated `src/main.ts` and `src/style.css` only. No new files. No new packages.
 
-After completing, suggest the next git commit message and branch name.
+Suggested commit: `feat(asteroids): game juice - shake, near-miss, particles, audio, mobile controls`

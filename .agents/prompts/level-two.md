@@ -1,49 +1,77 @@
-# /level-two — Add a Second Level
+# /wave-escalation — Add Boss Waves and Escalation
 
-Read `AGENTS.md` fully before starting. Load `skills/threejs-fundamentals.md`, `skills/threejs-lighting.md`, and `skills/threejs-geometry.md`.
+Read `AGENTS.md` fully before starting. Load `skills/threejs-game.md` and `skills/threejs-geometry.md`.
 
 ---
 
 ## Context
 
-The base Cube Runner game is complete with power-ups and juice. Your job is to add a second level that triggers when the player reaches the end of level one.
+The Asteroids 3D game is running on the `asteroids` branch. Waves increase asteroid count each round. Your job is to add escalating variety so later waves feel harder and more chaotic — without changing the core loop.
 
 ---
 
 ## Requirements
 
-### Level Transition
+### Escalating Difficulty Per Wave
 
-- Level one ends when the player reaches `z <= -180` (past the last obstacle)
-- Show a brief transition: fade the scene to black over 0.5 seconds, swap level, fade back in
-- Fade is a full-screen CSS overlay with opacity transition — no Three.js post-processing needed
-- Do not use `GAME_OVER` phase for transition — add a `TRANSITION` phase
+Add wave-scaling to `GAME_CONFIG`:
+```ts
+WAVE_SPEED_SCALE: 0.08,     // asteroid speed multiplier added per wave (stacks)
+WAVE_EXTRA_ASTEROIDS: 2,    // extra large asteroids per wave beyond wave 1
+WAVE_MAX_ASTEROIDS: 12,     // hard cap
+```
 
-### Level Two Differences
+Asteroids spawned in wave N should move at `baseSpeed * (1 + (N-1) * WAVE_SPEED_SCALE)`.
 
-Level two must feel distinct from level one. Implement at least **two** of the following changes:
+### Fast Asteroids (wave 3+)
 
-| Change | Description |
-|---|---|
-| **Narrower platform** | Reduce `ground.width` from 15 to 10 |
-| **Higher speed** | Increase base `forwardSpeed` by 4 |
-| **New obstacle layout** | Different `OBSTACLE_LAYOUT` — tighter, more complex patterns |
-| **Color theme** | Change scene background, ground color, and obstacle color |
-| **New lighting** | Change ambient/directional light colors for a different mood |
-| **Moving obstacles** | One or more obstacles oscillate left/right on X axis each frame |
+Starting wave 3, 20% of large asteroids spawn as "fast" variants:
+- Same geometry, but emissive red tint (`0xff3300`, emissiveIntensity 1.5)
+- Speed 2.5× the normal large speed
+- Still split into 2 medium on destruction
 
-### Architecture
+### Swarm Wave (every 4th wave)
 
-- Extract level data into a `LEVELS` array: `Array<{ groundColor, skyColor, obstacleLayout, powerUpLayout, speedMultiplier, ... }>`
-- `loadLevel(index: number)` method clears current obstacles/power-ups and rebuilds from level data
-- Current level tracked as `private currentLevel = 0`
-- Score continues accumulating across levels (does not reset on transition)
+On waves 4, 8, 12…, replace the normal spawn with a **swarm wave**:
+- Spawn 12 small asteroids (no large or medium) converging on the ship position
+- Velocity points from spawn edge toward ship + small random spread (±15°)
+- Show `SWARM WAVE!` in the wave HUD banner instead of `WAVE N`
 
-### Win State
+### Boss Asteroid (wave 5+, once per run)
 
-- If the player completes level two, show a **You Win** screen (new panel, same styling as game over)
-- Display final score
-- Offer a **Play Again** button that resets to level one
+On wave 5 (or the first wave divisible by 5), spawn one **Boss** asteroid in addition to normal asteroids:
+- `DodecahedronGeometry(4.5, 1)` — large, detailed
+- `MeshStandardMaterial` dark purple `0x440066`, emissiveIntensity 0.8
+- Requires **3 bullet hits** to destroy (track `hitPoints` on boss object)
+- Each hit flashes white emissive briefly
+- On destruction: +500 score, 4 medium children, screen shake 0.8s
+
+Add a `BossAsteroid` interface:
+```ts
+interface BossAsteroid {
+  mesh: THREE.Mesh
+  velocity: THREE.Vector3
+  rotationAxis: THREE.Vector3
+  rotationSpeed: number
+  hitPoints: number
+  flashTimer: number
+}
+```
+
+Track one optional `private boss: BossAsteroid | null = null`.
+
+### Wave Complete Check
+
+Update `checkWaveComplete()` to also wait for `this.boss === null` before advancing the wave.
+
+---
+
+## Architecture Rules
+
+- Keep all new config in `GAME_CONFIG`
+- No new files — all changes in `src/main.ts` and `src/style.css`
+- Boss must be disposed and nulled in `clearGameObjects()` and on destruction
+- Swarm wave logic must not break the wave counter or asteroid removal loop
 
 ---
 
@@ -51,4 +79,4 @@ Level two must feel distinct from level one. Implement at least **two** of the f
 
 Updated `src/main.ts` and `src/style.css` only. No new files. No new packages.
 
-After completing, suggest the next git commit message and branch name.
+Suggested commit: `feat(asteroids): wave escalation - fast asteroids, swarm waves, boss`
