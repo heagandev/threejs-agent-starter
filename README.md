@@ -129,6 +129,28 @@ MIT — free to use, extend, and ship.
 
 ---
 
+---
+
+## Open Source & Community
+
+This project is open source (MIT) and actively maintained. New games, prompts, and skills ship regularly — built by me and contributed by the community.
+
+**Ways to get involved:**
+
+- ⭐ **Star the repo** — helps others find it
+- 💬 **[Join the discussion](https://github.com/heagandev/threejs-agent-starter/discussions)** — share what you built, ask questions, suggest ideas
+- 🎮 **[Suggest a game](https://github.com/heagandev/threejs-agent-starter/issues/new?template=suggest-a-game.md)** — vote or propose the next branch
+- 🔀 **[Contribute](CONTRIBUTING.md)** — add a game branch, a prompt file, or a skill file
+
+**What's coming:**
+- More game branches (each built live with an AI agent)
+- More prompt files for common features and mechanics
+- More Three.js skill files for advanced topics
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to submit a game, prompt, or skill.
+
+---
+
 ## Want More?
 
 This is the free starter. Here's what the paid kits add:
