@@ -49,7 +49,7 @@ This branch was built from [`new-game`](../../tree/new-game) using the `/plan` p
 2. Use `/plan` to design your game with your agent
 3. Build it out, one feature branch at a time
 
-Open source (MIT) — build with it, extend it, [contribute back](CONTRIBUTING.md).
+Open source (MIT) — build with it, extend it, [share what you made with this](CONTRIBUTING.md).
 
 ---
 
